@@ -17,7 +17,6 @@ export default function MeetingDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [meeting, setMeeting] = useState<(Meeting & { assignments: any[] }) | null>(null)
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
   const [editing, setEditing] = useState(false)
   const [members, setMembers] = useState<Member[]>([])
   const [date, setDate] = useState('')
@@ -27,7 +26,7 @@ export default function MeetingDetailPage() {
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
-    const [mRes, uRes] = await Promise.all([fetch(`/api/meetings/${id}`), fetch('/api/auth/me')])
+    const mRes = await fetch(`/api/meetings/${id}`)
     if (mRes.ok) {
       const m = await mRes.json()
       setMeeting(m)
@@ -42,7 +41,6 @@ export default function MeetingDetailPage() {
     } else {
       router.push('/meetings')
     }
-    if (uRes.ok) setUser(await uRes.json())
   }, [id, router])
 
   useEffect(() => { load() }, [load])
@@ -53,7 +51,7 @@ export default function MeetingDetailPage() {
     }
   }, [editing])
 
-  const editable = user?.role === 'bishop' || user?.role === 'counselor'
+  const editable = true
 
   const filteredMembers = members.filter(
     (m) =>
@@ -100,11 +98,11 @@ export default function MeetingDetailPage() {
     router.push('/meetings')
   }
 
-  if (!meeting || !user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
+  if (!meeting) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
 
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         <Link href="/meetings" className="text-sm text-blue-600 hover:underline flex items-center gap-1 mb-4">

@@ -27,24 +27,19 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
   const [logTarget, setLogTarget] = useState<Member | null>(null)
   const [activeTab, setActiveTab] = useState<'overdue' | 'due-soon' | 'never'>('overdue')
 
   const load = useCallback(async () => {
-    const [dashRes, userRes] = await Promise.all([
-      fetch('/api/dashboard'),
-      fetch('/api/auth/me'),
-    ])
+    const dashRes = await fetch('/api/dashboard')
     if (dashRes.ok) setData(await dashRes.json())
-    if (userRes.ok) setUser(await userRes.json())
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  const editable = user?.role === 'bishop' || user?.role === 'counselor'
+  const editable = true
 
-  if (!data || !user) {
+  if (!data) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-400">Loading…</div>
@@ -60,7 +55,7 @@ export default function DashboardPage() {
 
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">

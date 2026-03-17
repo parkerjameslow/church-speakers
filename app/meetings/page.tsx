@@ -7,19 +7,15 @@ import Link from 'next/link'
 
 export default function MeetingsPage() {
   const [meetings, setMeetings] = useState<(Meeting & { assignments: any[] })[]>([])
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
 
   const load = useCallback(async () => {
-    const [mRes, uRes] = await Promise.all([fetch('/api/meetings?limit=100'), fetch('/api/auth/me')])
+    const mRes = await fetch('/api/meetings?limit=100')
     if (mRes.ok) setMeetings(await mRes.json())
-    if (uRes.ok) setUser(await uRes.json())
   }, [])
 
   useEffect(() => { load() }, [load])
 
-  const editable = user?.role === 'bishop' || user?.role === 'counselor'
-
-  if (!user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
+  const editable = true
 
   const today = new Date().toISOString().split('T')[0]
   const upcoming = meetings.filter((m) => m.date >= today)
@@ -27,7 +23,7 @@ export default function MeetingsPage() {
 
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">

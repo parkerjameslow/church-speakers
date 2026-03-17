@@ -1,14 +1,7 @@
 'use client'
-import { useState, useEffect } from 'react'
 import Navigation from '@/components/Navigation'
 
 export default function ReportsPage() {
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
-
-  useEffect(() => {
-    fetch('/api/auth/me').then((r) => r.json()).then(setUser)
-  }, [])
-
   function download(url: string, filename: string) {
     const a = document.createElement('a')
     a.href = url
@@ -16,11 +9,9 @@ export default function ReportsPage() {
     a.click()
   }
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
-
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         <h1 className="text-xl font-bold text-gray-900 mb-6">Reports & Exports</h1>

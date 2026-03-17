@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -10,14 +10,8 @@ const navItems = [
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
-export default function Navigation({ userName, role }: { userName: string; role: string }) {
+export default function Navigation() {
   const pathname = usePathname()
-  const router = useRouter()
-
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-  }
 
   return (
     <>
@@ -44,16 +38,6 @@ export default function Navigation({ userName, role }: { userName: string; role:
             )
           })}
         </nav>
-        <div className="p-4 border-t border-blue-800 text-xs text-blue-300">
-          <div className="font-medium text-white truncate">{userName}</div>
-          <div className="capitalize">{role}</div>
-          <button
-            onClick={handleLogout}
-            className="mt-2 text-blue-300 hover:text-white transition text-xs"
-          >
-            Sign out
-          </button>
-        </div>
       </aside>
 
       {/* Mobile bottom bar */}

@@ -12,7 +12,6 @@ type SortType = 'name' | 'urgency'
 
 export default function MembersPage() {
   const [members, setMembers] = useState<Member[]>([])
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
   const [tab, setTab] = useState<TabType>('adult')
   const [sort, setSort] = useState<SortType>('urgency')
   const [search, setSearch] = useState('')
@@ -21,17 +20,13 @@ export default function MembersPage() {
   const [logTarget, setLogTarget] = useState<Member | null>(null)
 
   const load = useCallback(async () => {
-    const [memRes, userRes] = await Promise.all([
-      fetch(`/api/members?includeInactive=${showInactive}`),
-      fetch('/api/auth/me'),
-    ])
+    const memRes = await fetch(`/api/members?includeInactive=${showInactive}`)
     if (memRes.ok) setMembers(await memRes.json())
-    if (userRes.ok) setUser(await userRes.json())
   }, [showInactive])
 
   useEffect(() => { load() }, [load])
 
-  const editable = user?.role === 'bishop' || user?.role === 'counselor'
+  const editable = true
 
   const filtered = members
     .filter((m) => m.category === tab)
@@ -45,11 +40,9 @@ export default function MembersPage() {
   const adultCount = members.filter((m) => m.category === 'adult').length
   const youthCount = members.filter((m) => m.category === 'youth').length
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
-
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-4">

@@ -13,7 +13,6 @@ interface Assignment {
 
 export default function NewMeetingPage() {
   const router = useRouter()
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
   const [members, setMembers] = useState<Member[]>([])
   const [date, setDate] = useState(nextSunday())
   const [notes, setNotes] = useState('')
@@ -23,8 +22,7 @@ export default function NewMeetingPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([fetch('/api/auth/me'), fetch('/api/members')]).then(async ([uRes, mRes]) => {
-      if (uRes.ok) setUser(await uRes.json())
+    fetch('/api/members').then(async (mRes) => {
       if (mRes.ok) setMembers(await mRes.json())
     })
   }, [])
@@ -85,11 +83,9 @@ export default function NewMeetingPage() {
     router.push(`/meetings/${data.id}`)
   }
 
-  if (!user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
-
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">

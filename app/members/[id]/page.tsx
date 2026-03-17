@@ -14,26 +14,23 @@ export default function MemberDetailPage() {
   const router = useRouter()
   const [member, setMember] = useState<Member | null>(null)
   const [records, setRecords] = useState<SpeakingRecord[]>([])
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
   const [editModal, setEditModal] = useState(false)
   const [logModal, setLogModal] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
-    const [memRes, recRes, userRes] = await Promise.all([
+    const [memRes, recRes] = await Promise.all([
       fetch(`/api/members/${id}`),
       fetch(`/api/speaking-records?memberId=${id}`),
-      fetch('/api/auth/me'),
     ])
     if (memRes.ok) setMember(await memRes.json())
     else router.push('/members')
     if (recRes.ok) setRecords(await recRes.json())
-    if (userRes.ok) setUser(await userRes.json())
   }, [id, router])
 
   useEffect(() => { load() }, [load])
 
-  const editable = user?.role === 'bishop' || user?.role === 'counselor'
+  const editable = true
 
   async function deleteRecord(recId: number) {
     if (!confirm('Delete this speaking record?')) return
@@ -49,13 +46,13 @@ export default function MemberDetailPage() {
     else setDeleting(false)
   }
 
-  if (!member || !user) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
+  if (!member) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
 
   const status = member.due_status ?? 'never'
 
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
-      <Navigation userName={user.name} role={user.role} />
+      <Navigation />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         {/* Back */}
@@ -176,7 +173,7 @@ export default function MemberDetailPage() {
           )}
         </div>
 
-        {editable && user.role === 'bishop' && (
+        {editable && (
           <div className="mt-4 flex justify-end">
             <button
               onClick={deleteMember}
