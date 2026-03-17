@@ -64,7 +64,7 @@ export default function ReportsPage() {
           />
         </div>
 
-        <div className="mt-8 p-4 bg-blue-50 rounded-xl text-sm text-blue-700">
+        <div className="mt-8 p-4 bg-gray-50 rounded-xl text-sm text-gray-700">
           <strong>Tip:</strong> Use your browser's Print dialog (Ctrl+P / Cmd+P) on any print page to save as PDF.
         </div>
       </main>

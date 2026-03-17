@@ -31,7 +31,7 @@ export default function MeetingsPage() {
           {editable && (
             <Link
               href="/meetings/new"
-              className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+              className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
             >
               + Plan Meeting
             </Link>
@@ -72,7 +72,7 @@ function MeetingRow({ meeting }: { meeting: Meeting & { assignments: any[] } }) 
   return (
     <Link
       href={`/meetings/${meeting.id}`}
-      className="block bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-blue-200 transition"
+      className="block bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-gray-200 transition"
     >
       <div className="flex items-center justify-between">
         <div className="font-semibold text-gray-900">{formatDate(meeting.date)}</div>

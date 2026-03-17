@@ -32,7 +32,7 @@ export default async function PrintQueuePage() {
   const sections = [
     { title: 'Overdue', members: overdue, color: 'text-red-600' },
     { title: 'Due Within 30 Days', members: dueSoon, color: 'text-amber-600' },
-    { title: 'Due Within 60 Days', members: comingUp, color: 'text-blue-600' },
+    { title: 'Due Within 60 Days', members: comingUp, color: 'text-gray-600' },
     { title: 'Never Spoken', members: never, color: 'text-gray-500' },
   ]
 

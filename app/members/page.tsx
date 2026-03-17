@@ -50,7 +50,7 @@ export default function MembersPage() {
           {editable && (
             <button
               onClick={() => setAddModal(true)}
-              className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+              className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
             >
               + Add Member
             </button>
@@ -82,12 +82,12 @@ export default function MembersPage() {
           <input
             type="search"
             placeholder="Search by name…"
-            className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 min-w-[200px] border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
           <select
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
             value={sort}
             onChange={(e) => setSort(e.target.value as SortType)}
           >

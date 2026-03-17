@@ -56,7 +56,7 @@ export default function MemberDetailPage() {
 
       <main className="max-w-3xl mx-auto px-4 py-6">
         {/* Back */}
-        <Link href="/members" className="text-sm text-blue-600 hover:underline flex items-center gap-1 mb-4">
+        <Link href="/members" className="text-sm text-gray-600 hover:underline flex items-center gap-1 mb-4">
           ← Back to Members
         </Link>
 
@@ -94,7 +94,7 @@ export default function MemberDetailPage() {
                 </button>
                 <button
                   onClick={() => setLogModal(true)}
-                  className="text-sm bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg transition"
+                  className="text-sm bg-gray-900 hover:bg-gray-700 text-white px-3 py-1.5 rounded-lg transition"
                 >
                   + Log Speaking
                 </button>
@@ -105,10 +105,10 @@ export default function MemberDetailPage() {
           {/* Details grid */}
           <div className="grid sm:grid-cols-2 gap-x-8 gap-y-2 mt-4 text-sm">
             {member.phone && (
-              <div><span className="text-gray-400">Phone: </span><a href={`tel:${member.phone}`} className="text-blue-600">{member.phone}</a></div>
+              <div><span className="text-gray-400">Phone: </span><a href={`tel:${member.phone}`} className="text-gray-600">{member.phone}</a></div>
             )}
             {member.email && (
-              <div><span className="text-gray-400">Email: </span><a href={`mailto:${member.email}`} className="text-blue-600">{member.email}</a></div>
+              <div><span className="text-gray-400">Email: </span><a href={`mailto:${member.email}`} className="text-gray-600">{member.email}</a></div>
             )}
             <div>
               <span className="text-gray-400">Cadence: </span>

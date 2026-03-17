@@ -17,7 +17,7 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
     <div className={`bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 ${borderColor(status)} p-4 flex flex-col gap-2`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <Link href={`/members/${member.id}`} className="font-semibold text-gray-900 hover:text-blue-700 truncate block">
+          <Link href={`/members/${member.id}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">
             {member.name}
           </Link>
           {member.household_name && (
@@ -26,11 +26,7 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
           <DueBadge status={status} />
-          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-            member.category === 'youth'
-              ? 'bg-purple-100 text-purple-700'
-              : 'bg-sky-100 text-sky-700'
-          }`}>
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
             {member.category === 'youth' ? 'Youth' : 'Adult'}
           </span>
         </div>
@@ -42,7 +38,7 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
           {member.last_spoke_date ? (
             <span className="text-gray-700">
               {formatDateShort(member.last_spoke_date)}
-              {member.last_topic && <span className="text-gray-500"> — {member.last_topic}</span>}
+              {member.last_topic && <span className="text-gray-400"> — {member.last_topic}</span>}
             </span>
           ) : (
             <span className="italic text-gray-400">Never</span>
@@ -51,7 +47,7 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
         {member.next_due_date && (
           <div>
             <span className="text-gray-400">Next due:</span>{' '}
-            <span className={status === 'overdue' ? 'text-red-600 font-medium' : 'text-gray-700'}>
+            <span className={status === 'overdue' ? 'text-red-500 font-medium' : 'text-gray-700'}>
               {formatDateShort(member.next_due_date)}
               {status === 'overdue' && member.days_overdue
                 ? ` (${member.days_overdue}d overdue)`
@@ -61,12 +57,12 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
         )}
         <div>
           <span className="text-gray-400">Cadence:</span>{' '}
-          <span className="text-gray-700">every {member.cadence_months} months</span>
+          <span className="text-gray-600">every {member.cadence_months} months</span>
         </div>
         {member.speaking_count !== undefined && (
           <div>
             <span className="text-gray-400">Total talks:</span>{' '}
-            <span className="text-gray-700">{member.speaking_count}</span>
+            <span className="text-gray-600">{member.speaking_count}</span>
           </div>
         )}
       </div>
@@ -75,13 +71,13 @@ export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
         <div className="flex gap-2 pt-1">
           <button
             onClick={() => onLogSpeaking(member)}
-            className="flex-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-1.5 rounded-lg transition"
+            className="flex-1 text-xs bg-gray-900 hover:bg-gray-700 text-white font-medium py-1.5 rounded-lg transition"
           >
             + Log Speaking
           </button>
           <Link
             href={`/members/${member.id}`}
-            className="flex-1 text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-1.5 rounded-lg transition text-center"
+            className="flex-1 text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-1.5 rounded-lg transition text-center border border-gray-200"
           >
             View Profile
           </Link>

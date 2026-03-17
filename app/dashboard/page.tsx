@@ -62,7 +62,7 @@ export default function DashboardPage() {
           <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
           <Link
             href="/meetings/new"
-            className="bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+            className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
           >
             + Plan Meeting
           </Link>
@@ -71,7 +71,7 @@ export default function DashboardPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
-            { label: 'Active Adults', value: data.stats.totalAdults, color: 'text-blue-700' },
+            { label: 'Active Adults', value: data.stats.totalAdults, color: 'text-gray-700' },
             { label: 'Active Youth', value: data.stats.totalYouth, color: 'text-purple-700' },
             { label: 'Meetings This Year', value: data.stats.meetingsThisYear, color: 'text-green-700' },
             { label: 'Talks This Year', value: data.stats.recordsThisYear, color: 'text-gray-700' },
@@ -144,7 +144,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Recent Meetings</h2>
-              <Link href="/meetings" className="text-xs text-blue-600 hover:underline">See all</Link>
+              <Link href="/meetings" className="text-xs text-gray-600 hover:underline">See all</Link>
             </div>
             <div className="space-y-2">
               {data.recentMeetings.length === 0 ? (
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                   <Link
                     key={m.id}
                     href={`/meetings/${m.id}`}
-                    className="block bg-white rounded-xl border border-gray-100 shadow-sm p-3 hover:border-blue-200 transition"
+                    className="block bg-white rounded-xl border border-gray-100 shadow-sm p-3 hover:border-gray-200 transition"
                   >
                     <div className="font-medium text-sm text-gray-900">{formatDateShort(m.date)}</div>
                     {m.assignments.length > 0 && (
@@ -170,7 +170,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/meetings/new"
-              className="mt-3 block text-center text-sm text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-xl py-3 transition"
+              className="mt-3 block text-center text-sm text-gray-600 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl py-3 transition"
             >
               + Plan a meeting
             </Link>

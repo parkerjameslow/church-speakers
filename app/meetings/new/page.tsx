@@ -89,7 +89,7 @@ export default function NewMeetingPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => router.back()} className="text-sm text-blue-600 hover:underline">← Back</button>
+          <button onClick={() => router.back()} className="text-sm text-gray-600 hover:underline">← Back</button>
           <h1 className="text-xl font-bold text-gray-900">Plan Meeting</h1>
         </div>
 
@@ -100,7 +100,7 @@ export default function NewMeetingPage() {
               <input
                 type="date"
                 required
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
               />
@@ -110,7 +110,7 @@ export default function NewMeetingPage() {
               <textarea
                 rows={2}
                 placeholder="Theme, special occasion, fast Sunday…"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -137,7 +137,7 @@ export default function NewMeetingPage() {
                     <input
                       type="text"
                       placeholder="Topic (optional)…"
-                      className="w-full text-xs border border-gray-200 rounded px-2 py-1 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                      className="w-full text-xs border border-gray-200 rounded px-2 py-1 mt-1 focus:outline-none focus:ring-1 focus:ring-gray-400"
                       value={a.topic}
                       onChange={(e) => updateTopic(idx, e.target.value)}
                     />
@@ -158,7 +158,7 @@ export default function NewMeetingPage() {
               <input
                 type="search"
                 placeholder="Search and add a speaker…"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -169,14 +169,14 @@ export default function NewMeetingPage() {
                       key={m.id}
                       type="button"
                       onClick={() => addSpeaker(m)}
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center justify-between"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex items-center justify-between"
                     >
                       <span>{m.name}</span>
                       <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                        m.due_status === 'overdue' ? 'bg-red-100 text-red-600' :
-                        m.due_status === 'due-soon' ? 'bg-amber-100 text-amber-600' :
+                        m.due_status === 'overdue' ? 'bg-red-50 text-red-600' :
+                        m.due_status === 'due-soon' ? 'bg-amber-50 text-amber-600' :
                         m.due_status === 'never' ? 'bg-gray-100 text-gray-500' :
-                        'bg-green-100 text-green-600'
+                        'bg-gray-100 text-gray-600'
                       }`}>{m.due_status}</span>
                     </button>
                   ))}
@@ -190,7 +190,7 @@ export default function NewMeetingPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
+            className="w-full bg-gray-900 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save Meeting'}
           </button>
