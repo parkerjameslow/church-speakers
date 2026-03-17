@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from 'next/server'
+import db from '@/lib/db'
+import { getSession, canEdit } from '@/lib/auth'
+import { getDueStatus, getDaysOverdue, getCategory, getNextDueDate } from '@/lib/utils'
+import { Member } from '@/types'
+
+function enrichMember(row: any): Member {
+  const category = getCategory(row.birth_date)
+  const dueStatus = getDueStatus(row.last_spoke_date, row.cadence_months)
+  const nextDue = getNextDueDate(row.last_spoke_date, row.cadence_months)
+  const daysOverdue =
+    dueStatus === 'overdue'
+      ? getDaysOverdue(row.last_spoke_date, row.cadence_months)
+      : 0
+  return {
+    ...row,
+    is_active: row.is_active === 1,
+    category,
+    due_status: dueStatus,
+    next_due_date: nextDue ? nextDue.toISOString().split('T')[0] : null,
+    days_overdue: daysOverdue,
+  }
+}
+
+export async function GET(req: NextRequest) {
+  const session = await getSession()
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const { searchParams } = new URL(req.url)
+  const category = searchParams.get('category')
+  const search = searchParams.get('search') || ''
+  const includeInactive = searchParams.get('includeInactive') === 'true'
+
+  const rows = db
+    .prepare(
+      `SELECT m.*,
+        h.name as household_name,
+        sr.date as last_spoke_date,
+        sr.topic as last_topic,
+        (SELECT COUNT(*) FROM speaking_records WHERE member_id = m.id) as speaking_count
+      FROM members m
+      LEFT JOIN households h ON m.household_id = h.id
+      LEFT JOIN speaking_records sr ON sr.id = (
+        SELECT id FROM speaking_records WHERE member_id = m.id ORDER BY date DESC, id DESC LIMIT 1
+      )
+      WHERE (? = 1 OR m.is_active = 1)
+        AND (? = '' OR m.name LIKE ?)
+      ORDER BY m.name`
+    )
+    .all(includeInactive ? 1 : 0, search, `%${search}%`) as any[]
+
+  let members = rows.map(enrichMember)
+
+  if (category) {
+    members = members.filter((m) => m.category === category)
+  }
+
+  return NextResponse.json(members)
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getSession()
+  if (!session || !canEdit(session.role)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const body = await req.json()
+  const { name, birth_date, phone, email, household_id, notes, cadence_months } = body
+  if (!name) return NextResponse.json({ error: 'Name required' }, { status: 400 })
+
+  const result = db
+    .prepare(
+      `INSERT INTO members (name, birth_date, phone, email, household_id, notes, cadence_months)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      name,
+      birth_date || null,
+      phone || null,
+      email || null,
+      household_id || null,
+      notes || null,
+      cadence_months || 12
+    )
+
+  const member = db
+    .prepare('SELECT m.*, h.name as household_name FROM members m LEFT JOIN households h ON m.household_id = h.id WHERE m.id = ?')
+    .get(result.lastInsertRowid) as any
+
+  return NextResponse.json(enrichMember({ ...member, last_spoke_date: null, last_topic: null, speaking_count: 0 }), { status: 201 })
+}
