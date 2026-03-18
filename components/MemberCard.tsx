@@ -107,20 +107,40 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         className="p-4 cursor-pointer select-none"
         onClick={() => !editing && setExpanded((v) => !v)}
       >
-        {/* Row 1: Name + category label + status badge */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="min-w-0">
+        {/* Row 1: Name + category + status badge | days since talk + Add Talk button */}
+        <div className="flex items-center justify-between gap-3 mb-3">
+          {/* Left: name, category, status */}
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="font-semibold text-gray-900 leading-tight">{member.name}</span>
-            <span className="ml-1.5 text-xs text-gray-400 font-medium">
+            <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
               {member.category === 'youth' ? 'Youth' : 'Adult'}
             </span>
+            <StatusBadge status={status} />
           </div>
-          <StatusBadge status={status} />
+
+          {/* Right: days since talk + Add Talk button */}
+          <div className="flex items-center gap-2 shrink-0">
+            {member.days_since_last_talk != null && (
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                <span className="font-bold text-gray-900">{member.days_since_last_talk}</span> days since last talk
+              </span>
+            )}
+            {onLogSpeaking && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onLogSpeaking(member) }}
+                className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition shadow-sm shrink-0"
+                title="Log a talk"
+              >
+                <span className="text-base font-medium leading-none">+</span>
+                <span className="text-[10px] font-semibold tracking-wide">Add Talk</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Row 2: Most Recent Talk bordered box */}
         {member.recent_talks && member.recent_talks.length > 0 && (
-          <div className="border border-gray-100 rounded-lg p-2.5 mb-3 bg-gray-50">
+          <div className="border border-gray-100 rounded-lg p-2.5 bg-gray-50">
             <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
               Most Recent Talk and Topic
             </div>
@@ -141,29 +161,6 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
             </div>
           </div>
         )}
-
-        {/* Row 3: Days since talk (left) + Add Talk button (right) */}
-        <div className="flex items-end justify-between">
-          {member.days_since_last_talk != null ? (
-            <div className="leading-tight">
-              <span className="text-2xl font-bold text-gray-900">{member.days_since_last_talk}</span>
-              <span className="text-xs text-gray-400 ml-1">days since last talk</span>
-            </div>
-          ) : (
-            <div className="text-xs text-gray-400">No talks recorded</div>
-          )}
-
-          {onLogSpeaking && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onLogSpeaking(member) }}
-              className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition shadow-sm"
-              title="Log a talk"
-            >
-              <span className="text-base font-medium leading-none">+</span>
-              <span className="text-[10px] font-semibold tracking-wide">Add Talk</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Expandable detail section */}
