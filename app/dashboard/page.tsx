@@ -103,46 +103,6 @@ export default function DashboardPage() {
           <div className="md:col-span-2">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Speaker Queue</h2>
 
-            {/* Never Spoken — collapsible section */}
-            {data.queue.neverSpoken.length > 0 && (
-              <div className="mb-3 border border-gray-200 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setNeverExpanded((v) => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition text-left"
-                >
-                  <span className="text-sm font-semibold text-gray-600">Never Spoken</span>
-                  <div className="flex items-center gap-2">
-                    <span className="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
-                      {data.queue.neverSpoken.length}
-                    </span>
-                    <svg
-                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${neverExpanded ? 'rotate-180' : ''}`}
-                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </button>
-
-                <div
-                  style={{ maxHeight: neverExpanded ? `${data.queue.neverSpoken.length * 160}px` : '0px' }}
-                  className="overflow-hidden transition-all duration-300 ease-in-out"
-                >
-                  <div className="p-3 space-y-2 bg-white">
-                    {data.queue.neverSpoken.map((m) => (
-                      <MemberCard
-                        key={m.id}
-                        member={m}
-                        canEdit={editable}
-                        onLogSpeaking={setLogTarget}
-                        onSaved={load}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Tabs: Overdue + Due Soon */}
             <div className="flex gap-1 mb-3 bg-gray-100 rounded-lg p-1">
               {queueSections.map((s) => (
@@ -161,6 +121,45 @@ export default function DashboardPage() {
             {queueSections.map((s) =>
               activeTab === s.id ? (
                 <div key={s.id} className="space-y-3">
+                  {/* Never Spoken — collapsible, only on Overdue tab */}
+                  {s.id === 'overdue' && data.queue.neverSpoken.length > 0 && (
+                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                      <button
+                        onClick={() => setNeverExpanded((v) => !v)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                      >
+                        <span className="text-sm font-semibold text-gray-600">Never Spoken</span>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                            {data.queue.neverSpoken.length}
+                          </span>
+                          <svg
+                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${neverExpanded ? 'rotate-180' : ''}`}
+                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </button>
+                      <div
+                        style={{ maxHeight: neverExpanded ? `${data.queue.neverSpoken.length * 160}px` : '0px' }}
+                        className="overflow-hidden transition-all duration-300 ease-in-out"
+                      >
+                        <div className="p-3 space-y-2 bg-white">
+                          {data.queue.neverSpoken.map((m) => (
+                            <MemberCard
+                              key={m.id}
+                              member={m}
+                              canEdit={editable}
+                              onLogSpeaking={setLogTarget}
+                              onSaved={load}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {s.members.length === 0 ? (
                     <div className="text-center py-8 text-gray-400 text-sm bg-white rounded-xl border border-gray-100">
                       No speakers in this category

@@ -25,6 +25,8 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
     cadence_months: member?.cadence_months?.toString() ?? '12',
     category: (member?.category_override ?? member?.category ?? 'adult') as 'adult' | 'youth',
     is_active: member?.is_active !== false,
+    last_talk_date: '',
+    last_talk_topic: '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -76,6 +78,21 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
       setSaving(false)
       return
     }
+
+    // If adding a new member with a last talk date, log the speaking record
+    if (!member && form.last_talk_date) {
+      const newMember = await res.json()
+      await fetch('/api/speaking-records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          member_id: newMember.id,
+          date: form.last_talk_date,
+          topic: form.last_talk_topic || null,
+        }),
+      })
+    }
+
     onSaved()
   }
 
@@ -185,6 +202,33 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
               />
               Active member (include in queue)
             </label>
+          )}
+
+          {!member && (
+            <div className="border-t border-gray-100 pt-4 space-y-3">
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">Last Talk (optional)</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={form.last_talk_date}
+                    onChange={(e) => setForm({ ...form, last_talk_date: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+                  <input
+                    type="text"
+                    placeholder="Talk topic…"
+                    className={inputClass}
+                    value={form.last_talk_topic}
+                    onChange={(e) => setForm({ ...form, last_talk_topic: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
           )}
 
           {error && <p className="text-red-500 text-sm">{error}</p>}
