@@ -5,20 +5,16 @@ import MemberModal from '@/components/MemberModal'
 import SpeakingRecordModal from '@/components/SpeakingRecordModal'
 import { Member } from '@/types'
 
-type Tab = 'upnext' | 'all'
 type FilterType = 'all' | 'adult' | 'youth'
 type SortDir = 'desc' | 'asc'
 
 export default function HomePage() {
-  const [tab, setTab] = useState<Tab>('upnext')
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
   const [logTarget, setLogTarget] = useState<Member | null>(null)
   const [addModal, setAddModal] = useState(false)
   const [neverExpanded, setNeverExpanded] = useState(false)
-  const [neverAllExpanded, setNeverAllExpanded] = useState(false)
 
-  // All Speakers tab state
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterType>('all')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
@@ -34,15 +30,9 @@ export default function HomePage() {
 
   const activeMembers = members.filter((m) => m.is_active !== false && m.is_active !== 0)
 
-  // Up Next: members who have spoken, sorted longest time since last talk first
-  const spokenMembers = activeMembers
-    .filter((m) => m.due_status !== 'never')
-    .sort((a, b) => (b.days_since_last_talk ?? 0) - (a.days_since_last_talk ?? 0))
-
   const neverSpokenMembers = activeMembers.filter((m) => m.due_status === 'never')
 
-  // All Speakers: exclude never-spoken (shown in collapsible), filtered + sortable
-  const filteredAll = activeMembers
+  const filteredMembers = activeMembers
     .filter((m) => m.due_status !== 'never')
     .filter((m) => filter === 'all' || m.category === filter)
     .filter((m) => search === '' || m.name.toLowerCase().includes(search.toLowerCase()))
@@ -52,44 +42,21 @@ export default function HomePage() {
       return sortDir === 'desc' ? bDays - aDays : aDays - bDays
     })
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: 'upnext', label: 'Up Next' },
-    { id: 'all', label: 'All Speakers' },
-  ]
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex items-center justify-between pt-4">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-900 tracking-tight">
               Speaker Tracker
             </span>
-            {tab === 'all' && (
-              <button
-                onClick={() => setAddModal(true)}
-                className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
-              >
-                + Add Member
-              </button>
-            )}
-          </div>
-          {/* Tab bar */}
-          <div className="flex mt-1">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                  tab === t.id
-                    ? 'border-gray-900 text-gray-900'
-                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+            <button
+              onClick={() => setAddModal(true)}
+              className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
+            >
+              + Add Member
+            </button>
           </div>
         </div>
       </header>
@@ -99,10 +66,9 @@ export default function HomePage() {
           <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
         )}
 
-        {/* UP NEXT TAB */}
-        {!loading && tab === 'upnext' && (
+        {!loading && (
           <div>
-            {/* Never Spoken collapsible section — top */}
+            {/* Never Spoken collapsible section */}
             {neverSpokenMembers.length > 0 && (
               <div className="mb-4">
                 <button
@@ -123,67 +89,6 @@ export default function HomePage() {
                   </svg>
                 </button>
                 {neverExpanded && (
-                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
-                    {neverSpokenMembers.map((m, i) => (
-                      <div
-                        key={m.id}
-                        className={`px-4 py-3 text-sm text-gray-800 ${
-                          i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
-                        }`}
-                      >
-                        {m.name}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                Since Last Talk
-              </h2>
-              <span className="text-xs text-gray-400">{spokenMembers.length} speakers</span>
-            </div>
-
-            {spokenMembers.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 text-sm">
-                No speaking records yet. Log a talk to get started.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {spokenMembers.map((m) => (
-                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ALL SPEAKERS TAB */}
-        {!loading && tab === 'all' && (
-          <div>
-            {/* Never Spoken collapsible section — top */}
-            {neverSpokenMembers.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setNeverAllExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>Never Spoken</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {neverSpokenMembers.length}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${neverAllExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {neverAllExpanded && (
                   <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
                     {neverSpokenMembers.map((m, i) => (
                       <div
@@ -240,13 +145,21 @@ export default function HomePage() {
               </button>
             </div>
 
-            {filteredAll.length === 0 ? (
+            {/* Member count label */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                Since Last Talk
+              </h2>
+              <span className="text-xs text-gray-400">{filteredMembers.length} speakers</span>
+            </div>
+
+            {filteredMembers.length === 0 ? (
               <div className="text-center py-16 text-gray-400 text-sm">
-                {search ? 'No members match your search.' : 'No members yet. Add one above.'}
+                {search ? 'No members match your search.' : 'No speaking records yet. Log a talk to get started.'}
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredAll.map((m) => (
+                {filteredMembers.map((m) => (
                   <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} />
                 ))}
               </div>
