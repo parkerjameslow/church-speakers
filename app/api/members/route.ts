@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     for (const t of allTalks) {
       if (!talksByMember[t.member_id]) talksByMember[t.member_id] = []
       if (talksByMember[t.member_id].length < 3) {
-        talksByMember[t.member_id].push({ date: t.date, topic: t.topic })
+        talksByMember[t.member_id].push({ id: t.id, date: t.date, topic: t.topic })
       }
     }
   }
