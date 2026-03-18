@@ -185,6 +185,47 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            {canEdit && expanded && !editing && (
+              <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={!isActive}
+                    onChange={(e) => {
+                      const val = !e.target.checked
+                      setIsActive(val)
+                      patchMember({ is_active: val })
+                    }}
+                  />
+                  Inactive
+                </label>
+                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={isMoved}
+                    onChange={(e) => {
+                      setIsMoved(e.target.checked)
+                      patchMember({ is_moved: e.target.checked })
+                    }}
+                  />
+                  Moved
+                </label>
+                <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={isStake}
+                    onChange={(e) => {
+                      setIsStake(e.target.checked)
+                      patchMember({ is_stake: e.target.checked })
+                    }}
+                  />
+                  Stake
+                </label>
+              </div>
+            )}
             {member.days_since_last_talk != null && (
               <div className="flex flex-col items-end gap-0.5">
                 <span className="text-2xl font-bold text-gray-900 leading-none">
@@ -266,46 +307,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
               )}
 
               {canEdit && (
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={!isActive}
-                        onChange={(e) => {
-                          const val = !e.target.checked
-                          setIsActive(val)
-                          patchMember({ is_active: val })
-                        }}
-                      />
-                      Inactive
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={isMoved}
-                        onChange={(e) => {
-                          setIsMoved(e.target.checked)
-                          patchMember({ is_moved: e.target.checked })
-                        }}
-                      />
-                      Moved
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        className="rounded"
-                        checked={isStake}
-                        onChange={(e) => {
-                          setIsStake(e.target.checked)
-                          patchMember({ is_stake: e.target.checked })
-                        }}
-                      />
-                      Stake
-                    </label>
-                  </div>
+                <div className="flex justify-end">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditing(true) }}
                     className="text-xs font-semibold text-gray-400 hover:text-gray-700 hover:bg-gray-100 px-2.5 py-1 rounded-lg transition"
