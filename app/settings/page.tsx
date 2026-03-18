@@ -35,11 +35,14 @@ export default function SettingsPage() {
             Applied automatically when adding a new member.
           </p>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Adults</label>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 border border-gray-100 rounded-xl bg-gray-50">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Adults</div>
+                <div className="text-xs text-gray-400 mt-0.5">Default cadence for adult members</div>
+              </div>
               <select
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
                 value={adultCadence}
                 onChange={(e) => setAdultCadence(e.target.value)}
               >
@@ -48,10 +51,14 @@ export default function SettingsPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Youth</label>
+
+            <div className="flex items-center justify-between p-3 border border-gray-100 rounded-xl bg-gray-50">
+              <div>
+                <div className="text-sm font-semibold text-gray-800">Youth</div>
+                <div className="text-xs text-gray-400 mt-0.5">Default cadence for youth members</div>
+              </div>
               <select
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
                 value={youthCadence}
                 onChange={(e) => setYouthCadence(e.target.value)}
               >
