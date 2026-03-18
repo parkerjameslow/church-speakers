@@ -16,6 +16,7 @@ export default function HomePage() {
   const [logTarget, setLogTarget] = useState<Member | null>(null)
   const [addModal, setAddModal] = useState(false)
   const [neverExpanded, setNeverExpanded] = useState(false)
+  const [neverAllExpanded, setNeverAllExpanded] = useState(false)
 
   // All Speakers tab state
   const [search, setSearch] = useState('')
@@ -109,6 +110,43 @@ export default function HomePage() {
         {/* UP NEXT TAB */}
         {!loading && tab === 'upnext' && (
           <div>
+            {/* Never Spoken collapsible section — top */}
+            {neverSpokenMembers.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setNeverExpanded((x) => !x)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Never Spoken</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                      {neverSpokenMembers.length}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${neverExpanded ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {neverExpanded && (
+                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    {neverSpokenMembers.map((m, i) => (
+                      <div
+                        key={m.id}
+                        className={`px-4 py-3 text-sm text-gray-800 ${
+                          i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
+                        }`}
+                      >
+                        {m.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
                 Since Last Talk
@@ -127,53 +165,49 @@ export default function HomePage() {
                 ))}
               </div>
             )}
-
-            {/* Never Spoken collapsible section */}
-            {neverSpokenMembers.length > 0 && (
-              <div className="mt-6">
-                <button
-                  onClick={() => setNeverExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <span>Never Spoken ({neverSpokenMembers.length})</span>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${neverExpanded ? 'rotate-180' : ''}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {neverExpanded && (
-                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
-                    {neverSpokenMembers.map((m, i) => {
-                      const daysAdded = Math.floor(
-                        (Date.now() - new Date(m.created_at).getTime()) / 86400000
-                      )
-                      return (
-                        <div
-                          key={m.id}
-                          className={`flex items-center justify-between px-4 py-3 ${
-                            i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
-                          }`}
-                        >
-                          <span className="text-sm font-medium text-gray-800">{m.name}</span>
-                          <span className="text-xs text-gray-400">{daysAdded}d since added</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
 
         {/* ALL SPEAKERS TAB */}
         {!loading && tab === 'all' && (
           <div>
+            {/* Never Spoken collapsible section — top */}
+            {neverSpokenMembers.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setNeverAllExpanded((x) => !x)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Never Spoken</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                      {neverSpokenMembers.length}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${neverAllExpanded ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {neverAllExpanded && (
+                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    {neverSpokenMembers.map((m, i) => (
+                      <div
+                        key={m.id}
+                        className={`px-4 py-3 text-sm text-gray-800 ${
+                          i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
+                        }`}
+                      >
+                        {m.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Search */}
             <input
               type="search"
