@@ -231,10 +231,10 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
               )}
 
               {canEdit && (
-                <div className="pt-1">
+                <div className="flex justify-end">
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditing(true) }}
-                    className="w-full border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 py-1.5 rounded-lg text-xs font-semibold transition"
+                    className="text-xs font-semibold text-gray-400 hover:text-gray-700 hover:bg-gray-100 px-2.5 py-1 rounded-lg transition"
                   >
                     Edit
                   </button>
