@@ -196,26 +196,7 @@ export default function MembersPage() {
 
         <NeverSpokenSection members={neverSpoken} />
 
-        {activeMembers.length === 0 && !search ? (
-          <div className="text-center py-16 text-gray-400">No active members yet.</div>
-        ) : activeMembers.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">No members match your search.</div>
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
-            {activeMembers.map((m) => (
-              <MemberCard
-                key={m.id}
-                member={m}
-                canEdit={editable}
-                onLogSpeaking={setLogTarget}
-                onSaved={load}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Bottom sections */}
-        <div className="space-y-3">
+        <div className="space-y-3 mb-4">
           <CollapsibleMemberSection
             label="Inactive"
             members={inactiveMembers}
@@ -231,6 +212,24 @@ export default function MembersPage() {
             onSaved={load}
           />
         </div>
+
+        {activeMembers.length === 0 && !search ? (
+          <div className="text-center py-16 text-gray-400">No active members yet.</div>
+        ) : activeMembers.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">No members match your search.</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {activeMembers.map((m) => (
+              <MemberCard
+                key={m.id}
+                member={m}
+                canEdit={editable}
+                onLogSpeaking={setLogTarget}
+                onSaved={load}
+              />
+            ))}
+          </div>
+        )}
       </main>
 
       {addModal && (
