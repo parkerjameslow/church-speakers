@@ -80,5 +80,6 @@ db.exec(`
 // Migrations
 try { db.exec(`ALTER TABLE members ADD COLUMN category_override TEXT`) } catch {}
 try { db.exec(`ALTER TABLE members ADD COLUMN is_moved INTEGER NOT NULL DEFAULT 0`) } catch {}
+try { db.exec(`ALTER TABLE members ADD COLUMN is_stake INTEGER NOT NULL DEFAULT 0`) } catch {}
 
 export default db

@@ -16,6 +16,7 @@ function enrichMember(row: any): Member {
     ...row,
     is_active: row.is_active === 1,
     is_moved: row.is_moved === 1,
+    is_stake: row.is_stake === 1,
     category,
     due_status: dueStatus,
     next_due_date: nextDue ? nextDue.toISOString().split('T')[0] : null,

@@ -83,6 +83,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
   )
   const [isActive, setIsActive] = useState(member.is_active !== false)
   const [isMoved, setIsMoved] = useState(!!member.is_moved)
+  const [isStake, setIsStake] = useState(!!member.is_stake)
   const [savedLabel, setSavedLabel] = useState(false)
   const lastTalk = member.recent_talks?.[0] ?? null
   const [form, setForm] = useState({
@@ -108,6 +109,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         cadence_months: cadence,
         is_active: isActive,
         is_moved: isMoved,
+        is_stake: isStake,
         category_override: category,
         ...patch,
       }),
@@ -283,6 +285,18 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                         }}
                       />
                       Moved
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={isStake}
+                        onChange={(e) => {
+                          setIsStake(e.target.checked)
+                          patchMember({ is_stake: e.target.checked })
+                        }}
+                      />
+                      Stake
                     </label>
                   </div>
                   <button

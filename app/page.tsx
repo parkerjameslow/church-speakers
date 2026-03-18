@@ -16,6 +16,7 @@ export default function HomePage() {
   const [neverExpanded, setNeverExpanded] = useState(false)
   const [inactiveExpanded, setInactiveExpanded] = useState(false)
   const [movedExpanded, setMovedExpanded] = useState(false)
+  const [stakeExpanded, setStakeExpanded] = useState(false)
 
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterType>('all')
@@ -30,9 +31,10 @@ export default function HomePage() {
 
   useEffect(() => { load() }, [load])
 
-  const inactiveMembers = members.filter((m) => (m.is_active === false || m.is_active === 0) && !m.is_moved)
-  const movedMembers = members.filter((m) => !!m.is_moved)
-  const activeMembers = members.filter((m) => m.is_active !== false && m.is_active !== 0 && !m.is_moved)
+  const inactiveMembers = members.filter((m) => (m.is_active === false || m.is_active === 0) && !m.is_moved && !m.is_stake)
+  const movedMembers = members.filter((m) => !!m.is_moved && !m.is_stake)
+  const stakeMembers = members.filter((m) => !!m.is_stake)
+  const activeMembers = members.filter((m) => m.is_active !== false && m.is_active !== 0 && !m.is_moved && !m.is_stake)
 
   const neverSpokenMembers = activeMembers.filter((m) => m.due_status === 'never')
 
@@ -162,6 +164,36 @@ export default function HomePage() {
                 {movedExpanded && (
                   <div className="mt-1 space-y-3">
                     {movedMembers.map((m) => (
+                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Stake collapsible section */}
+            {stakeMembers.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setStakeExpanded((x) => !x)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Stake</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                      {stakeMembers.length}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${stakeExpanded ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {stakeExpanded && (
+                  <div className="mt-1 space-y-3">
+                    {stakeMembers.map((m) => (
                       <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
                     ))}
                   </div>

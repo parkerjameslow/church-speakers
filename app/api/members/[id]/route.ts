@@ -12,6 +12,7 @@ function enrichMember(row: any) {
     ...row,
     is_active: row.is_active === 1,
     is_moved: row.is_moved === 1,
+    is_stake: row.is_stake === 1,
     category,
     due_status: dueStatus,
     next_due_date: nextDue ? nextDue.toISOString().split('T')[0] : null,
@@ -48,11 +49,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json()
-  const { name, birth_date, phone, email, household_id, notes, cadence_months, is_active, is_moved, category_override } = body
+  const { name, birth_date, phone, email, household_id, notes, cadence_months, is_active, is_moved, is_stake, category_override } = body
 
   db.prepare(
     `UPDATE members SET name=?, birth_date=?, phone=?, email=?, household_id=?,
-     notes=?, cadence_months=?, is_active=?, is_moved=?, category_override=?, updated_at=datetime('now')
+     notes=?, cadence_months=?, is_active=?, is_moved=?, is_stake=?, category_override=?, updated_at=datetime('now')
      WHERE id=?`
   ).run(
     name,
@@ -64,6 +65,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     cadence_months || 12,
     is_active ? 1 : 0,
     is_moved ? 1 : 0,
+    is_stake ? 1 : 0,
     category_override || null,
     params.id
   )
