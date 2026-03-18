@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
 import { getSession, canEdit } from '@/lib/auth'
 import { getDueStatus, getDaysOverdue, getCategory, getNextDueDate } from '@/lib/utils'
-import { Member } from '@/types'
+import { Member, Category } from '@/types'
 
 function enrichMember(row: any): Member {
-  const category = getCategory(row.birth_date)
+  const category: Category = (row.category_override as Category) || getCategory(row.birth_date)
   const dueStatus = getDueStatus(row.last_spoke_date, row.cadence_months)
   const nextDue = getNextDueDate(row.last_spoke_date, row.cadence_months)
   const daysOverdue =

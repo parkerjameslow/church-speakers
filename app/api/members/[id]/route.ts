@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
 import { getSession, canEdit } from '@/lib/auth'
 import { getDueStatus, getDaysOverdue, getCategory, getNextDueDate } from '@/lib/utils'
+import { Category } from '@/types'
 
 function enrichMember(row: any) {
-  const category = getCategory(row.birth_date)
+  const category: Category = (row.category_override as Category) || getCategory(row.birth_date)
   const dueStatus = getDueStatus(row.last_spoke_date, row.cadence_months)
   const nextDue = getNextDueDate(row.last_spoke_date, row.cadence_months)
   return {
@@ -46,11 +47,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const body = await req.json()
-  const { name, birth_date, phone, email, household_id, notes, cadence_months, is_active } = body
+  const { name, birth_date, phone, email, household_id, notes, cadence_months, is_active, category_override } = body
 
   db.prepare(
     `UPDATE members SET name=?, birth_date=?, phone=?, email=?, household_id=?,
-     notes=?, cadence_months=?, is_active=?, updated_at=datetime('now')
+     notes=?, cadence_months=?, is_active=?, category_override=?, updated_at=datetime('now')
      WHERE id=?`
   ).run(
     name,
@@ -61,6 +62,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     notes || null,
     cadence_months || 12,
     is_active ? 1 : 0,
+    category_override || null,
     params.id
   )
 

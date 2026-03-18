@@ -37,6 +37,7 @@ export interface Member {
   days_overdue?: number
   days_since_last_talk?: number | null
   category?: Category
+  category_override?: Category | null
   speaking_count?: number
   recent_talks?: { date: string; topic: string | null }[]
 }

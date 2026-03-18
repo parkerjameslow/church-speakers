@@ -117,6 +117,7 @@ export default function MembersPage() {
                 member={m}
                 canEdit={editable}
                 onLogSpeaking={setLogTarget}
+                onSaved={load}
               />
             ))}
           </div>

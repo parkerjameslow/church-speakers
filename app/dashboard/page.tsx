@@ -132,6 +132,7 @@ export default function DashboardPage() {
                         member={m}
                         canEdit={editable}
                         onLogSpeaking={setLogTarget}
+                        onSaved={load}
                       />
                     ))
                   )}
