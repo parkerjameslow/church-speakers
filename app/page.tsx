@@ -160,7 +160,7 @@ export default function HomePage() {
             ) : (
               <div className="space-y-3">
                 {filteredMembers.map((m) => (
-                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} />
+                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
                 ))}
               </div>
             )}
