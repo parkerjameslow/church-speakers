@@ -7,6 +7,41 @@ import SpeakingRecordModal from '@/components/SpeakingRecordModal'
 import { Member } from '@/types'
 import { sortByUrgency } from '@/lib/utils'
 
+function NeverSpokenSection({ members }: { members: Member[] }) {
+  const [open, setOpen] = useState(false)
+  if (members.length === 0) return null
+  return (
+    <div className="mb-4 border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-700">Never Spoken</span>
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+            {members.length}
+          </span>
+        </div>
+        <svg
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-4 py-3">
+          <ul className="space-y-1.5">
+            {members.map((m) => (
+              <li key={m.id} className="text-sm text-gray-700">{m.name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
+
 type TabType = 'adult' | 'youth'
 type SortType = 'name' | 'urgency'
 
@@ -27,6 +62,10 @@ export default function MembersPage() {
   useEffect(() => { load() }, [load])
 
   const editable = true
+
+  const neverSpoken = members
+    .filter((m) => m.category === tab && m.due_status === 'never' && m.is_active !== false)
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   const filtered = members
     .filter((m) => m.category === tab)
@@ -104,6 +143,8 @@ export default function MembersPage() {
             Show inactive
           </label>
         </div>
+
+        <NeverSpokenSection members={neverSpoken} />
 
         {filtered.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
