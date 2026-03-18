@@ -134,7 +134,7 @@ export default function HomePage() {
                 {inactiveExpanded && (
                   <div className="mt-1 space-y-3">
                     {inactiveMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
+                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                     ))}
                   </div>
                 )}
@@ -164,7 +164,7 @@ export default function HomePage() {
                 {movedExpanded && (
                   <div className="mt-1 space-y-3">
                     {movedMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
+                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                     ))}
                   </div>
                 )}
@@ -194,7 +194,7 @@ export default function HomePage() {
                 {stakeExpanded && (
                   <div className="mt-1 space-y-3">
                     {stakeMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
+                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                     ))}
                   </div>
                 )}
@@ -256,7 +256,7 @@ export default function HomePage() {
             ) : (
               <div className="space-y-3">
                 {filteredMembers.map((m) => (
-                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} />
+                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                 ))}
               </div>
             )}
