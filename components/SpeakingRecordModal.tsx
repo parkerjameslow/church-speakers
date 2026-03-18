@@ -13,7 +13,6 @@ export default function SpeakingRecordModal({ member, onClose, onSaved }: Props)
   const [form, setForm] = useState({
     date: today,
     topic: '',
-    duration_minutes: '',
     notes: '',
   })
   const [saving, setSaving] = useState(false)
@@ -30,7 +29,7 @@ export default function SpeakingRecordModal({ member, onClose, onSaved }: Props)
         member_id: member.id,
         date: form.date,
         topic: form.topic || null,
-        duration_minutes: form.duration_minutes ? parseInt(form.duration_minutes) : null,
+        duration_minutes: null,
         notes: form.notes || null,
       }),
     })
@@ -70,18 +69,6 @@ export default function SpeakingRecordModal({ member, onClose, onSaved }: Props)
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
               value={form.topic}
               onChange={(e) => setForm({ ...form, topic: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-            <input
-              type="number"
-              min="1"
-              max="60"
-              placeholder="e.g. 10"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
-              value={form.duration_minutes}
-              onChange={(e) => setForm({ ...form, duration_minutes: e.target.value })}
             />
           </div>
           <div>
