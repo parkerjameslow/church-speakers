@@ -7,6 +7,7 @@ interface Props {
   member: Member
   onLogSpeaking?: (member: Member) => void
   onSaved?: () => void
+  onDeleted?: () => void
   canEdit?: boolean
 }
 
@@ -74,7 +75,7 @@ const CATEGORY_OPTIONS = [
   { label: 'Youth', value: 'youth' },
 ]
 
-export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: Props) {
+export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, canEdit }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [cadence, setCadence] = useState(member.cadence_months)
@@ -92,6 +93,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
     talk_topic: lastTalk?.topic ?? '',
   })
   const [saving, setSaving] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const status = member.due_status ?? 'never'
 
@@ -156,6 +158,11 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
     setSaving(false)
     setEditing(false)
     onSaved?.()
+  }
+
+  async function deleteMember() {
+    await fetch(`/api/members/${member.id}`, { method: 'DELETE' })
+    onDeleted?.()
   }
 
   const inputCls =
@@ -348,7 +355,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
 
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => setEditing(false)}
+                  onClick={() => { setEditing(false); setConfirmDelete(false) }}
                   className="flex-1 border border-gray-200 text-gray-600 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-50 transition"
                 >
                   Cancel
@@ -361,6 +368,35 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                   {saving ? 'Saving…' : 'Save'}
                 </button>
               </div>
+
+              {onDeleted && (
+                <div className="pt-1 border-t border-gray-100">
+                  {!confirmDelete ? (
+                    <button
+                      onClick={() => setConfirmDelete(true)}
+                      className="w-full text-xs font-semibold text-red-400 hover:text-red-600 hover:bg-red-50 py-1.5 rounded-lg transition"
+                    >
+                      Delete Member
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 flex-1">Are you sure?</span>
+                      <button
+                        onClick={() => setConfirmDelete(false)}
+                        className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition"
+                      >
+                        No
+                      </button>
+                      <button
+                        onClick={deleteMember}
+                        className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition"
+                      >
+                        Yes, Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>

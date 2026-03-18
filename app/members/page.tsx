@@ -87,6 +87,7 @@ function CollapsibleMemberSection({
                 canEdit
                 onLogSpeaking={onLogSpeaking}
                 onSaved={onSaved}
+                onDeleted={onSaved}
               />
             ))}
           </div>
@@ -226,6 +227,7 @@ export default function MembersPage() {
                 canEdit={editable}
                 onLogSpeaking={setLogTarget}
                 onSaved={load}
+                onDeleted={load}
               />
             ))}
           </div>
