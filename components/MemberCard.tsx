@@ -317,6 +317,32 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
                   >
                     Edit
                   </button>
+                  {onDeleted && (
+                    !confirmDelete ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+                        className="px-3.5 py-1.5 rounded-lg border border-red-200 bg-white text-sm font-semibold text-red-400 hover:text-red-600 hover:bg-red-50 transition"
+                      >
+                        Delete
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Sure?</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
+                          className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition"
+                        >
+                          No
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); deleteMember() }}
+                          className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition"
+                        >
+                          Yes
+                        </button>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             )}
@@ -375,34 +401,6 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
               </button>
             </div>
 
-            {onDeleted && (
-              <div className="pt-1 border-t border-gray-100">
-                {!confirmDelete ? (
-                  <button
-                    onClick={() => setConfirmDelete(true)}
-                    className="w-full text-xs font-semibold text-red-400 hover:text-red-600 hover:bg-red-50 py-1.5 rounded-lg transition"
-                  >
-                    Delete Member
-                  </button>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 flex-1">Are you sure?</span>
-                    <button
-                      onClick={() => setConfirmDelete(false)}
-                      className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition"
-                    >
-                      No
-                    </button>
-                    <button
-                      onClick={deleteMember}
-                      className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition"
-                    >
-                      Yes, Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         )}
       </div>
