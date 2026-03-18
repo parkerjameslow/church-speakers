@@ -36,31 +36,43 @@ function StatusBadge({ status }: { status: DueStatus }) {
   )
 }
 
-function CategoryToggle({
+function Toggle({
+  options,
   value,
   onChange,
 }: {
-  value: Category
-  onChange: (cat: Category) => void
+  options: { label: string; value: string | number }[]
+  value: string | number
+  onChange: (v: any) => void
 }) {
   return (
     <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
-      {(['adult', 'youth'] as Category[]).map((cat) => (
+      {options.map((opt) => (
         <button
-          key={cat}
-          onClick={(e) => { e.stopPropagation(); onChange(cat) }}
-          className={`px-3 py-1.5 text-xs font-semibold capitalize transition ${
-            value === cat
+          key={String(opt.value)}
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onChange(opt.value) }}
+          className={`px-3 py-1.5 text-xs font-semibold transition ${
+            value === opt.value
               ? 'bg-gray-900 text-white'
               : 'bg-white text-gray-500 hover:bg-gray-50'
           }`}
         >
-          {cat === 'adult' ? 'Adult' : 'Youth'}
+          {opt.label}
         </button>
       ))}
     </div>
   )
 }
+
+const CADENCE_OPTIONS = [
+  { label: '6 mo', value: 6 },
+  { label: '12 mo', value: 12 },
+]
+const CATEGORY_OPTIONS = [
+  { label: 'Adult', value: 'adult' },
+  { label: 'Youth', value: 'youth' },
+]
 
 export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: Props) {
   const [expanded, setExpanded] = useState(false)
@@ -71,10 +83,11 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
   )
   const [savedLabel, setSavedLabel] = useState(false)
   const [form, setForm] = useState({
-    category: (member.category_override ?? member.category ?? 'adult') as Category,
     name: member.name,
-    cadence_months: member.cadence_months.toString(),
+    cadence_months: member.cadence_months,
+    category: (member.category_override ?? member.category ?? 'adult') as Category,
     is_active: member.is_active !== false,
+    is_moved: !!member.is_moved,
   })
   const [saving, setSaving] = useState(false)
 
@@ -93,6 +106,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         notes: member.notes,
         cadence_months: cadence,
         is_active: member.is_active,
+        is_moved: member.is_moved,
         category_override: category,
         ...patch,
       }),
@@ -100,16 +114,6 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
     setSavedLabel(true)
     setTimeout(() => setSavedLabel(false), 2000)
     onSaved?.()
-  }
-
-  async function saveCadence(value: number) {
-    setCadence(value)
-    await patchMember({ cadence_months: value })
-  }
-
-  async function saveCategory(value: Category) {
-    setCategory(value)
-    await patchMember({ category_override: value })
   }
 
   async function saveEdit() {
@@ -124,12 +128,13 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         email: member.email,
         household_id: member.household_id,
         notes: member.notes,
-        cadence_months: parseInt(form.cadence_months),
+        cadence_months: form.cadence_months,
         is_active: form.is_active,
+        is_moved: form.is_moved,
         category_override: form.category,
       }),
     })
-    setCadence(parseInt(form.cadence_months))
+    setCadence(form.cadence_months)
     setCategory(form.category)
     setSaving(false)
     setEditing(false)
@@ -146,9 +151,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         className="p-4 cursor-pointer select-none"
         onClick={() => !editing && setExpanded((v) => !v)}
       >
-        {/* Name + category + status badge | days since talk + Add Talk button */}
         <div className="flex items-center justify-between gap-3">
-          {/* Left: name, category, status */}
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="font-semibold text-gray-900 leading-tight">{member.name}</span>
             <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
@@ -157,7 +160,6 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
             <StatusBadge status={status} />
           </div>
 
-          {/* Right: days since talk + Add Talk button */}
           <div className="flex items-center gap-3 shrink-0">
             {member.days_since_last_talk != null && (
               <div className="flex flex-col items-end gap-0.5">
@@ -196,17 +198,16 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                 </div>
                 {canEdit ? (
                   <div className="flex items-center gap-2 flex-wrap">
-                    <select
+                    <Toggle
+                      options={CADENCE_OPTIONS}
                       value={cadence}
-                      onChange={(e) => saveCadence(parseInt(e.target.value))}
-                      onClick={(e) => e.stopPropagation()}
-                      className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
-                    >
-                      <option value={6}>Every 6 months</option>
-                      <option value={12}>Every 12 months</option>
-                      <option value={24}>Every 24 months</option>
-                    </select>
-                    <CategoryToggle value={category} onChange={saveCategory} />
+                      onChange={(v) => { setCadence(v); patchMember({ cadence_months: v }) }}
+                    />
+                    <Toggle
+                      options={CATEGORY_OPTIONS}
+                      value={category}
+                      onChange={(v) => { setCategory(v); patchMember({ category_override: v }) }}
+                    />
                     {savedLabel && <span className="text-xs text-green-500 font-medium">Saved ✓</span>}
                   </div>
                 ) : (
@@ -271,43 +272,39 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                   Speaking Cadence
                 </label>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <select
-                    className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                  <Toggle
+                    options={CADENCE_OPTIONS}
                     value={form.cadence_months}
-                    onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}
-                  >
-                    <option value="6">Every 6 months</option>
-                    <option value="12">Every 12 months</option>
-                    <option value="24">Every 24 months</option>
-                  </select>
-                  <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
-                    {(['adult', 'youth'] as Category[]).map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setForm({ ...form, category: cat })}
-                        className={`px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                          form.category === cat
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-white text-gray-500 hover:bg-gray-50'
-                        }`}
-                      >
-                        {cat === 'adult' ? 'Adult' : 'Youth'}
-                      </button>
-                    ))}
-                  </div>
+                    onChange={(v) => setForm({ ...form, cadence_months: v })}
+                  />
+                  <Toggle
+                    options={CATEGORY_OPTIONS}
+                    value={form.category}
+                    onChange={(v) => setForm({ ...form, category: v })}
+                  />
                 </div>
               </div>
 
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={!form.is_active}
-                  onChange={(e) => setForm({ ...form, is_active: !e.target.checked })}
-                  className="rounded"
-                />
-                Mark as inactive
-              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!form.is_active}
+                    onChange={(e) => setForm({ ...form, is_active: !e.target.checked })}
+                    className="rounded"
+                  />
+                  Inactive
+                </label>
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.is_moved}
+                    onChange={(e) => setForm({ ...form, is_moved: e.target.checked })}
+                    className="rounded"
+                  />
+                  Moved
+                </label>
+              </div>
 
               <div className="flex gap-2 pt-1">
                 <button

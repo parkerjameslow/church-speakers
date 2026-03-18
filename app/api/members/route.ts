@@ -15,6 +15,7 @@ function enrichMember(row: any): Member {
   return {
     ...row,
     is_active: row.is_active === 1,
+    is_moved: row.is_moved === 1,
     category,
     due_status: dueStatus,
     next_due_date: nextDue ? nextDue.toISOString().split('T')[0] : null,
@@ -43,11 +44,10 @@ export async function GET(req: NextRequest) {
       LEFT JOIN speaking_records sr ON sr.id = (
         SELECT id FROM speaking_records WHERE member_id = m.id ORDER BY date DESC, id DESC LIMIT 1
       )
-      WHERE (? = 1 OR m.is_active = 1)
-        AND (? = '' OR m.name LIKE ?)
+      WHERE (? = '' OR m.name LIKE ?)
       ORDER BY m.name`
     )
-    .all(includeInactive ? 1 : 0, search, `%${search}%`) as any[]
+    .all(search, `%${search}%`) as any[]
 
   // Batch fetch up to 3 recent talks per member
   let talksByMember: Record<number, { date: string; topic: string | null }[]> = {}

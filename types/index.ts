@@ -27,6 +27,7 @@ export interface Member {
   notes: string | null
   cadence_months: number
   is_active: number | boolean
+  is_moved: number | boolean
   created_at: string
   updated_at: string
   // Joined / computed

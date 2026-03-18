@@ -7,6 +7,17 @@ import SpeakingRecordModal from '@/components/SpeakingRecordModal'
 import { Member } from '@/types'
 import { sortByUrgency } from '@/lib/utils'
 
+function ChevronIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+}
+
 function NeverSpokenSection({ members }: { members: Member[] }) {
   const [open, setOpen] = useState(false)
   if (members.length === 0) return null
@@ -22,12 +33,7 @@ function NeverSpokenSection({ members }: { members: Member[] }) {
             {members.length}
           </span>
         </div>
-        <svg
-          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
+        <ChevronIcon open={open} />
       </button>
       {open && (
         <div className="border-t border-gray-100 px-4 py-3">
@@ -42,6 +48,54 @@ function NeverSpokenSection({ members }: { members: Member[] }) {
   )
 }
 
+function CollapsibleMemberSection({
+  label,
+  members,
+  badgeColor,
+  onLogSpeaking,
+  onSaved,
+}: {
+  label: string
+  members: Member[]
+  badgeColor: string
+  onLogSpeaking: (m: Member) => void
+  onSaved: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  if (members.length === 0) return null
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-700">{label}</span>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${badgeColor}`}>
+            {members.length}
+          </span>
+        </div>
+        <ChevronIcon open={open} />
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-4 py-3">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {members.map((m) => (
+              <MemberCard
+                key={m.id}
+                member={m}
+                canEdit
+                onLogSpeaking={onLogSpeaking}
+                onSaved={onSaved}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 type TabType = 'adult' | 'youth'
 type SortType = 'name' | 'urgency'
 
@@ -50,34 +104,39 @@ export default function MembersPage() {
   const [tab, setTab] = useState<TabType>('adult')
   const [sort, setSort] = useState<SortType>('urgency')
   const [search, setSearch] = useState('')
-  const [showInactive, setShowInactive] = useState(false)
   const [addModal, setAddModal] = useState(false)
   const [logTarget, setLogTarget] = useState<Member | null>(null)
 
   const load = useCallback(async () => {
-    const memRes = await fetch(`/api/members?includeInactive=${showInactive}`)
-    if (memRes.ok) setMembers(await memRes.json())
-  }, [showInactive])
+    const res = await fetch('/api/members')
+    if (res.ok) setMembers(await res.json())
+  }, [])
 
   useEffect(() => { load() }, [load])
 
   const editable = true
 
-  const neverSpoken = members
-    .filter((m) => m.category === tab && m.due_status === 'never' && m.is_active !== false)
+  const tabMembers = members.filter((m) => m.category === tab)
+
+  const activeMembers = tabMembers
+    .filter((m) => m.is_active !== false && !m.is_moved)
+    .filter((m) => search === '' || m.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => sort === 'urgency' ? sortByUrgency(a, b) : a.name.localeCompare(b.name))
+
+  const neverSpoken = tabMembers
+    .filter((m) => m.is_active !== false && !m.is_moved && m.due_status === 'never')
     .sort((a, b) => a.name.localeCompare(b.name))
 
-  const filtered = members
-    .filter((m) => m.category === tab)
-    .filter((m) =>
-      search === '' || m.name.toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) =>
-      sort === 'urgency' ? sortByUrgency(a, b) : a.name.localeCompare(b.name)
-    )
+  const inactiveMembers = tabMembers
+    .filter((m) => m.is_active === false && !m.is_moved)
+    .sort((a, b) => a.name.localeCompare(b.name))
 
-  const adultCount = members.filter((m) => m.category === 'adult').length
-  const youthCount = members.filter((m) => m.category === 'youth').length
+  const movedMembers = tabMembers
+    .filter((m) => !!m.is_moved)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  const adultCount = members.filter((m) => m.category === 'adult' && m.is_active !== false && !m.is_moved).length
+  const youthCount = members.filter((m) => m.category === 'youth' && m.is_active !== false && !m.is_moved).length
 
   return (
     <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
@@ -133,26 +192,17 @@ export default function MembersPage() {
             <option value="urgency">Sort: Most Overdue First</option>
             <option value="name">Sort: Name A–Z</option>
           </select>
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={showInactive}
-              onChange={(e) => setShowInactive(e.target.checked)}
-              className="rounded"
-            />
-            Show inactive
-          </label>
         </div>
 
         <NeverSpokenSection members={neverSpoken} />
 
-        {filtered.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            {search ? 'No members match your search.' : 'No members yet. Add one above!'}
-          </div>
+        {activeMembers.length === 0 && !search ? (
+          <div className="text-center py-16 text-gray-400">No active members yet.</div>
+        ) : activeMembers.length === 0 ? (
+          <div className="text-center py-16 text-gray-400">No members match your search.</div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filtered.map((m) => (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+            {activeMembers.map((m) => (
               <MemberCard
                 key={m.id}
                 member={m}
@@ -163,6 +213,24 @@ export default function MembersPage() {
             ))}
           </div>
         )}
+
+        {/* Bottom sections */}
+        <div className="space-y-3">
+          <CollapsibleMemberSection
+            label="Inactive"
+            members={inactiveMembers}
+            badgeColor="bg-gray-100 text-gray-500 border-gray-200"
+            onLogSpeaking={setLogTarget}
+            onSaved={load}
+          />
+          <CollapsibleMemberSection
+            label="Moved"
+            members={movedMembers}
+            badgeColor="bg-blue-50 text-blue-500 border-blue-100"
+            onLogSpeaking={setLogTarget}
+            onSaved={load}
+          />
+        </div>
       </main>
 
       {addModal && (

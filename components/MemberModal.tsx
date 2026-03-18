@@ -27,6 +27,7 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
     is_active: member?.is_active !== false,
     last_talk_date: '',
     last_talk_topic: '',
+    is_moved: !!member?.is_moved,
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -61,6 +62,7 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
       notes: form.notes || null,
       cadence_months: parseInt(form.cadence_months),
       is_active: form.is_active,
+      is_moved: form.is_moved,
       category_override: form.category,
     }
 
@@ -110,16 +112,23 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
           {/* Cadence + Category toggle */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Cadence</label>
-            <div className="flex items-center gap-2">
-              <select
-                className={inputClass}
-                value={form.cadence_months}
-                onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}
-              >
-                {CADENCE_OPTIONS.map((n) => (
-                  <option key={n} value={n}>Every {n} months</option>
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                {([6, 12] as const).map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setForm({ ...form, cadence_months: String(n) })}
+                    className={`px-3 py-2 text-sm font-semibold transition ${
+                      form.cadence_months === String(n)
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {n} mo
+                  </button>
                 ))}
-              </select>
+              </div>
               <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
                 {(['adult', 'youth'] as const).map((cat) => (
                   <button
@@ -175,17 +184,28 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
             />
           </div>
 
-          {member && (
+          <div className="flex gap-4">
+            {member && (
+              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!form.is_active}
+                  onChange={(e) => setForm({ ...form, is_active: !e.target.checked })}
+                  className="rounded"
+                />
+                Inactive
+              </label>
+            )}
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
               <input
                 type="checkbox"
-                checked={form.is_active}
-                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                checked={form.is_moved}
+                onChange={(e) => setForm({ ...form, is_moved: e.target.checked })}
                 className="rounded"
               />
-              Active member (include in queue)
+              Moved
             </label>
-          )}
+          </div>
 
           {!member && (
             <div className="border-t border-gray-100 pt-4 space-y-3">

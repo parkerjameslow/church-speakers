@@ -77,7 +77,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_meeting_assignments_member ON meeting_assignments(member_id);
 `)
 
-// Migration: add category_override column if not exists
+// Migrations
 try { db.exec(`ALTER TABLE members ADD COLUMN category_override TEXT`) } catch {}
+try { db.exec(`ALTER TABLE members ADD COLUMN is_moved INTEGER NOT NULL DEFAULT 0`) } catch {}
 
 export default db
