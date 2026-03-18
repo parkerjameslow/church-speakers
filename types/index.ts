@@ -35,8 +35,10 @@ export interface Member {
   next_due_date?: string | null
   due_status?: DueStatus
   days_overdue?: number
+  days_since_last_talk?: number | null
   category?: Category
   speaking_count?: number
+  recent_talks?: { date: string; topic: string | null }[]
 }
 
 export interface SpeakingRecord {

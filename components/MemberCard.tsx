@@ -1,87 +1,80 @@
 'use client'
-import Link from 'next/link'
 import { Member } from '@/types'
-import { DueBadge, borderColor } from './DueBadge'
 import { formatDateShort } from '@/lib/utils'
 
 interface Props {
   member: Member
   onLogSpeaking?: (member: Member) => void
-  canEdit?: boolean
 }
 
-export default function MemberCard({ member, onLogSpeaking, canEdit }: Props) {
+export default function MemberCard({ member, onLogSpeaking }: Props) {
   const status = member.due_status ?? 'never'
+  const isOverdue = status === 'overdue'
+  const isNever = status === 'never'
 
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 ${borderColor(status)} p-4 flex flex-col gap-2`}>
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <Link href={`/members/${member.id}`} className="font-semibold text-gray-900 hover:text-gray-600 truncate block">
-            {member.name}
-          </Link>
-          {member.household_name && (
-            <span className="text-xs text-gray-400">{member.household_name} family</span>
-          )}
-        </div>
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <DueBadge status={status} />
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+    <div
+      className={`bg-white rounded-xl border p-4 ${
+        isOverdue ? 'border-red-100' : 'border-gray-100'
+      }`}
+    >
+      {/* Header row */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <h3 className="font-semibold text-gray-900 text-sm leading-tight">{member.name}</h3>
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
             {member.category === 'youth' ? 'Youth' : 'Adult'}
           </span>
-        </div>
-      </div>
-
-      <div className="text-xs text-gray-500 space-y-0.5">
-        <div>
-          <span className="text-gray-400">Last spoke:</span>{' '}
-          {member.last_spoke_date ? (
-            <span className="text-gray-700">
-              {formatDateShort(member.last_spoke_date)}
-              {member.last_topic && <span className="text-gray-400"> — {member.last_topic}</span>}
+          {isOverdue && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-100">
+              Overdue
             </span>
-          ) : (
-            <span className="italic text-gray-400">Never</span>
+          )}
+          {isNever && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-50 text-gray-400 border border-gray-200">
+              Never Spoken
+            </span>
           )}
         </div>
-        {member.next_due_date && (
-          <div>
-            <span className="text-gray-400">Next due:</span>{' '}
-            <span className={status === 'overdue' ? 'text-red-500 font-medium' : 'text-gray-700'}>
-              {formatDateShort(member.next_due_date)}
-              {status === 'overdue' && member.days_overdue
-                ? ` (${member.days_overdue}d overdue)`
-                : ''}
-            </span>
-          </div>
-        )}
-        <div>
-          <span className="text-gray-400">Cadence:</span>{' '}
-          <span className="text-gray-600">every {member.cadence_months} months</span>
-        </div>
-        {member.speaking_count !== undefined && (
-          <div>
-            <span className="text-gray-400">Total talks:</span>{' '}
-            <span className="text-gray-600">{member.speaking_count}</span>
-          </div>
-        )}
       </div>
 
-      {canEdit && onLogSpeaking && (
-        <div className="flex gap-2 pt-1">
-          <button
-            onClick={() => onLogSpeaking(member)}
-            className="flex-1 text-xs bg-gray-900 hover:bg-gray-700 text-white font-medium py-1.5 rounded-lg transition"
-          >
-            + Log Speaking
-          </button>
-          <Link
-            href={`/members/${member.id}`}
-            className="flex-1 text-xs bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-1.5 rounded-lg transition text-center border border-gray-200"
-          >
-            View Profile
-          </Link>
+      {/* Days since last talk */}
+      {member.days_since_last_talk != null ? (
+        <div className="mb-3">
+          <span className={`text-2xl font-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+            {member.days_since_last_talk}
+          </span>
+          <span className="text-xs text-gray-400 ml-1.5">days since last talk</span>
         </div>
+      ) : (
+        <div className="text-sm text-gray-400 italic mb-3">No talks recorded</div>
+      )}
+
+      {/* Recent talks */}
+      {member.recent_talks && member.recent_talks.length > 0 && (
+        <div className="space-y-1 mb-3 border-t border-gray-50 pt-3">
+          {member.recent_talks.map((talk, i) => (
+            <div key={i} className="flex items-baseline gap-1.5 text-xs">
+              <span className="text-gray-500 font-medium whitespace-nowrap shrink-0">
+                {formatDateShort(talk.date)}
+              </span>
+              {talk.topic ? (
+                <span className="text-gray-400 truncate">— {talk.topic}</span>
+              ) : (
+                <span className="text-gray-300 italic">— No topic</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {onLogSpeaking && (
+        <button
+          onClick={() => onLogSpeaking(member)}
+          className="w-full text-xs font-medium bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 py-2 rounded-lg transition"
+        >
+          + Log Speaking
+        </button>
       )}
     </div>
   )

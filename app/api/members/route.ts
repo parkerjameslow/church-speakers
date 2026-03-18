@@ -49,7 +49,43 @@ export async function GET(req: NextRequest) {
     )
     .all(includeInactive ? 1 : 0, search, `%${search}%`) as any[]
 
-  let members = rows.map(enrichMember)
+  // Batch fetch up to 3 recent talks per member
+  let talksByMember: Record<number, { date: string; topic: string | null }[]> = {}
+  if (rows.length > 0) {
+    const ids = rows.map((r: any) => r.id)
+    const placeholders = ids.map(() => '?').join(',')
+    const allTalks = db
+      .prepare(
+        `SELECT member_id, date, topic FROM speaking_records
+         WHERE member_id IN (${placeholders})
+         ORDER BY date DESC, id DESC`
+      )
+      .all(...ids) as any[]
+
+    for (const t of allTalks) {
+      if (!talksByMember[t.member_id]) talksByMember[t.member_id] = []
+      if (talksByMember[t.member_id].length < 3) {
+        talksByMember[t.member_id].push({ date: t.date, topic: t.topic })
+      }
+    }
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  let members = rows.map((row) => {
+    const enriched = enrichMember(row)
+    const daysSince = row.last_spoke_date
+      ? Math.floor(
+          (today.getTime() - new Date(row.last_spoke_date + 'T00:00:00').getTime()) / 86400000
+        )
+      : null
+    return {
+      ...enriched,
+      recent_talks: talksByMember[row.id] || [],
+      days_since_last_talk: daysSince,
+    }
+  })
 
   if (category) {
     members = members.filter((m) => m.category === category)

@@ -1,5 +1,298 @@
-import { redirect } from 'next/navigation'
+'use client'
+import { useState, useEffect, useCallback } from 'react'
+import MemberCard from '@/components/MemberCard'
+import MemberModal from '@/components/MemberModal'
+import SpeakingRecordModal from '@/components/SpeakingRecordModal'
+import { Member } from '@/types'
 
-export default function Home() {
-  redirect('/dashboard')
+type Tab = 'upnext' | 'all' | 'settings'
+type FilterType = 'all' | 'adult' | 'youth'
+type SortDir = 'desc' | 'asc'
+
+export default function HomePage() {
+  const [tab, setTab] = useState<Tab>('upnext')
+  const [members, setMembers] = useState<Member[]>([])
+  const [loading, setLoading] = useState(true)
+  const [logTarget, setLogTarget] = useState<Member | null>(null)
+  const [addModal, setAddModal] = useState(false)
+  const [neverExpanded, setNeverExpanded] = useState(false)
+
+  // All Speakers tab state
+  const [search, setSearch] = useState('')
+  const [filter, setFilter] = useState<FilterType>('all')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+
+  // Settings
+  const [defaultCadence, setDefaultCadence] = useState(12)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('defaultCadence')
+    if (saved) setDefaultCadence(parseInt(saved))
+  }, [])
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    const res = await fetch('/api/members')
+    if (res.ok) setMembers(await res.json())
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const activeMembers = members.filter((m) => m.is_active !== false && m.is_active !== 0)
+
+  // Up Next: members who have spoken, sorted longest time since last talk first
+  const spokenMembers = activeMembers
+    .filter((m) => m.due_status !== 'never')
+    .sort((a, b) => (b.days_since_last_talk ?? 0) - (a.days_since_last_talk ?? 0))
+
+  const neverSpokenMembers = activeMembers.filter((m) => m.due_status === 'never')
+
+  // All Speakers: filtered + sortable
+  const filteredAll = activeMembers
+    .filter((m) => filter === 'all' || m.category === filter)
+    .filter((m) => search === '' || m.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => {
+      const aDays = a.days_since_last_talk ?? 999999
+      const bDays = b.days_since_last_talk ?? 999999
+      return sortDir === 'desc' ? bDays - aDays : aDays - bDays
+    })
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'upnext', label: 'Up Next' },
+    { id: 'all', label: 'All Speakers' },
+    { id: 'settings', label: 'Settings' },
+  ]
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="flex items-center justify-between pt-4">
+            <span className="text-sm font-semibold text-gray-900 tracking-tight">
+              Speaker Tracker
+            </span>
+            {tab === 'all' && (
+              <button
+                onClick={() => setAddModal(true)}
+                className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
+              >
+                + Add Member
+              </button>
+            )}
+          </div>
+          {/* Tab bar */}
+          <div className="flex mt-1">
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  tab === t.id
+                    ? 'border-gray-900 text-gray-900'
+                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-6">
+        {loading && (
+          <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
+        )}
+
+        {/* UP NEXT TAB */}
+        {!loading && tab === 'upnext' && (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                Since Last Talk
+              </h2>
+              <span className="text-xs text-gray-400">{spokenMembers.length} speakers</span>
+            </div>
+
+            {spokenMembers.length === 0 ? (
+              <div className="text-center py-16 text-gray-400 text-sm">
+                No speaking records yet. Log a talk to get started.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {spokenMembers.map((m) => (
+                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} />
+                ))}
+              </div>
+            )}
+
+            {/* Never Spoken collapsible section */}
+            {neverSpokenMembers.length > 0 && (
+              <div className="mt-6">
+                <button
+                  onClick={() => setNeverExpanded((x) => !x)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                >
+                  <span>Never Spoken ({neverSpokenMembers.length})</span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${neverExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {neverExpanded && (
+                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
+                    {neverSpokenMembers.map((m, i) => {
+                      const daysAdded = Math.floor(
+                        (Date.now() - new Date(m.created_at).getTime()) / 86400000
+                      )
+                      return (
+                        <div
+                          key={m.id}
+                          className={`flex items-center justify-between px-4 py-3 ${
+                            i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
+                          }`}
+                        >
+                          <span className="text-sm font-medium text-gray-800">{m.name}</span>
+                          <span className="text-xs text-gray-400">{daysAdded}d since added</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ALL SPEAKERS TAB */}
+        {!loading && tab === 'all' && (
+          <div>
+            {/* Search */}
+            <input
+              type="search"
+              placeholder="Search members…"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white mb-3"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            {/* Filter + Sort */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                      filter === f
+                        ? 'bg-white shadow-sm text-gray-900'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+              >
+                Days Since Talk
+                <svg
+                  className={`w-3 h-3 transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            {filteredAll.length === 0 ? (
+              <div className="text-center py-16 text-gray-400 text-sm">
+                {search ? 'No members match your search.' : 'No members yet. Add one above.'}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredAll.map((m) => (
+                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* SETTINGS TAB */}
+        {!loading && tab === 'settings' && (
+          <div className="space-y-4">
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">Default Speaking Cadence</h3>
+              <p className="text-xs text-gray-400 mb-4">
+                Used as the default for new members. Members are marked overdue when they exceed their assigned cadence.
+              </p>
+              <div className="flex gap-2">
+                {[6, 12, 24].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      setDefaultCadence(n)
+                      localStorage.setItem('defaultCadence', String(n))
+                    }}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg border transition ${
+                      defaultCadence === n
+                        ? 'bg-gray-900 text-white border-gray-900'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    {n} months
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">About</h3>
+              <p className="text-xs text-gray-500">
+                Sacrament Speaker Tracker — manage who has spoken in sacrament meeting and plan upcoming meetings.
+              </p>
+              <p className="text-xs text-gray-400 mt-2">
+                Data stored locally in{' '}
+                <code className="bg-gray-100 px-1 rounded">data/church.db</code>
+              </p>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {addModal && (
+        <MemberModal
+          onClose={() => setAddModal(false)}
+          onSaved={() => {
+            setAddModal(false)
+            load()
+          }}
+        />
+      )}
+
+      {logTarget && (
+        <SpeakingRecordModal
+          member={logTarget}
+          onClose={() => setLogTarget(null)}
+          onSaved={() => {
+            setLogTarget(null)
+            load()
+          }}
+        />
+      )}
+    </div>
+  )
 }
