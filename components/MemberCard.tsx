@@ -81,6 +81,8 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
   const [category, setCategory] = useState<Category>(
     (member.category_override ?? member.category ?? 'adult') as Category
   )
+  const [isActive, setIsActive] = useState(member.is_active !== false)
+  const [isMoved, setIsMoved] = useState(!!member.is_moved)
   const [savedLabel, setSavedLabel] = useState(false)
   const lastTalk = member.recent_talks?.[0] ?? null
   const [form, setForm] = useState({
@@ -104,8 +106,8 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         household_id: member.household_id,
         notes: member.notes,
         cadence_months: cadence,
-        is_active: member.is_active,
-        is_moved: member.is_moved,
+        is_active: isActive,
+        is_moved: isMoved,
         category_override: category,
         ...patch,
       }),
@@ -255,7 +257,34 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
               )}
 
               {canEdit && (
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={!isActive}
+                        onChange={(e) => {
+                          const val = !e.target.checked
+                          setIsActive(val)
+                          patchMember({ is_active: val })
+                        }}
+                      />
+                      Inactive
+                    </label>
+                    <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer select-none" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="rounded"
+                        checked={isMoved}
+                        onChange={(e) => {
+                          setIsMoved(e.target.checked)
+                          patchMember({ is_moved: e.target.checked })
+                        }}
+                      />
+                      Moved
+                    </label>
+                  </div>
                   <button
                     onClick={(e) => { e.stopPropagation(); setEditing(true) }}
                     className="text-xs font-semibold text-gray-400 hover:text-gray-700 hover:bg-gray-100 px-2.5 py-1 rounded-lg transition"
