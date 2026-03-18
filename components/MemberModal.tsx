@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Member, Household } from '@/types'
+import { Member } from '@/types'
 
 interface Props {
   member?: Member | null
@@ -8,43 +8,41 @@ interface Props {
   onSaved: () => void
 }
 
-const CADENCE_OPTIONS = [3, 6, 9, 12, 18, 24, 36]
+const CADENCE_OPTIONS = [6, 12, 24]
+
+function getDefaultCadence(category: 'adult' | 'youth'): string {
+  if (typeof window === 'undefined') return '12'
+  return localStorage.getItem(`default_${category}_cadence`) ?? '12'
+}
 
 export default function MemberModal({ member, onClose, onSaved }: Props) {
-  const [households, setHouseholds] = useState<Household[]>([])
-  const [newHousehold, setNewHousehold] = useState('')
   const [form, setForm] = useState({
     name: member?.name ?? '',
     birth_date: member?.birth_date ?? '',
     phone: member?.phone ?? '',
     email: member?.email ?? '',
-    household_id: member?.household_id?.toString() ?? '',
     notes: member?.notes ?? '',
     cadence_months: member?.cadence_months?.toString() ?? '12',
+    category: (member?.category_override ?? member?.category ?? 'adult') as 'adult' | 'youth',
     is_active: member?.is_active !== false,
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
+  // On mount for new members, apply saved defaults
   useEffect(() => {
-    fetch('/api/households')
-      .then((r) => r.json())
-      .then(setHouseholds)
-  }, [])
-
-  async function addHousehold() {
-    if (!newHousehold.trim()) return
-    const res = await fetch('/api/households', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newHousehold.trim() }),
-    })
-    const data = await res.json()
-    if (res.ok) {
-      setHouseholds((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)))
-      setForm((f) => ({ ...f, household_id: data.id.toString() }))
-      setNewHousehold('')
+    if (!member) {
+      setForm((f) => ({ ...f, cadence_months: getDefaultCadence(f.category) }))
     }
+  }, [member])
+
+  // When category changes for new members, re-apply the default cadence
+  function handleCategoryChange(cat: 'adult' | 'youth') {
+    setForm((f) => ({
+      ...f,
+      category: cat,
+      cadence_months: member ? f.cadence_months : (localStorage.getItem(`default_${cat}_cadence`) ?? '12'),
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,10 +55,11 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
       birth_date: form.birth_date || null,
       phone: form.phone || null,
       email: form.email || null,
-      household_id: form.household_id ? parseInt(form.household_id) : null,
+      household_id: null,
       notes: form.notes || null,
       cadence_months: parseInt(form.cadence_months),
       is_active: form.is_active,
+      category_override: form.category,
     }
 
     const url = member ? `/api/members/${member.id}` : '/api/members'
@@ -80,7 +79,8 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
     onSaved()
   }
 
-  const inputClass = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400'
+  const inputClass =
+    'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400'
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -90,66 +90,99 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {/* Category + Cadence */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-              <input type="text" required className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Birth Date <span className="text-gray-400 font-normal">(for youth/adult)</span>
-              </label>
-              <input type="date" className={inputClass} value={form.birth_date} onChange={(e) => setForm({ ...form, birth_date: e.target.value })} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+              <select
+                className={inputClass}
+                value={form.category}
+                onChange={(e) => handleCategoryChange(e.target.value as 'adult' | 'youth')}
+              >
+                <option value="adult">Adult</option>
+                <option value="youth">Youth</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Cadence</label>
-              <select className={inputClass} value={form.cadence_months} onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}>
+              <select
+                className={inputClass}
+                value={form.cadence_months}
+                onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}
+              >
                 {CADENCE_OPTIONS.map((n) => (
                   <option key={n} value={n}>Every {n} months</option>
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+            <input
+              type="text"
+              required
+              className={inputClass}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+
+          {/* Phone + Email */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input type="tel" className={inputClass} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <input
+                type="tel"
+                className={inputClass}
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" className={inputClass} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <input
+                type="email"
+                className={inputClass}
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
             </div>
           </div>
 
+          {/* Birth date (optional, for age-based auto-category) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Household</label>
-            <select className={inputClass} value={form.household_id} onChange={(e) => setForm({ ...form, household_id: e.target.value })}>
-              <option value="">— None —</option>
-              {households.map((h) => (
-                <option key={h.id} value={h.id}>{h.name}</option>
-              ))}
-            </select>
-            <div className="flex gap-2 mt-1">
-              <input
-                type="text"
-                placeholder="New household name…"
-                className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-400"
-                value={newHousehold}
-                onChange={(e) => setNewHousehold(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addHousehold())}
-              />
-              <button type="button" onClick={addHousehold} className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg transition">
-                Add
-              </button>
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Birth Date <span className="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <input
+              type="date"
+              className={inputClass}
+              value={form.birth_date}
+              onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
+            />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-            <textarea rows={2} placeholder="Availability, preferences, special notes…" className={inputClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <textarea
+              rows={2}
+              placeholder="Availability, preferences, special notes…"
+              className={inputClass}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
           </div>
 
           {member && (
             <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} className="rounded" />
+              <input
+                type="checkbox"
+                checked={form.is_active}
+                onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
+                className="rounded"
+              />
               Active member (include in queue)
             </label>
           )}
@@ -157,10 +190,18 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
           {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-200 text-gray-600 font-medium py-2 rounded-lg text-sm hover:bg-gray-50 transition">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 border border-gray-200 text-gray-600 font-medium py-2 rounded-lg text-sm hover:bg-gray-50 transition"
+            >
               Cancel
             </button>
-            <button type="submit" disabled={saving} className="flex-1 bg-gray-900 hover:bg-gray-700 text-white font-medium py-2 rounded-lg text-sm transition disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 bg-gray-900 hover:bg-gray-700 text-white font-medium py-2 rounded-lg text-sm transition disabled:opacity-50"
+            >
               {saving ? 'Saving…' : member ? 'Save Changes' : 'Add Member'}
             </button>
           </div>

@@ -28,7 +28,8 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [logTarget, setLogTarget] = useState<Member | null>(null)
-  const [activeTab, setActiveTab] = useState<'overdue' | 'due-soon' | 'never'>('overdue')
+  const [activeTab, setActiveTab] = useState<'overdue' | 'due-soon'>('overdue')
+  const [neverExpanded, setNeverExpanded] = useState(false)
 
   const load = useCallback(async () => {
     const dashRes = await fetch('/api/dashboard')
@@ -48,9 +49,8 @@ export default function DashboardPage() {
   }
 
   const queueSections = [
-    { id: 'overdue' as const, label: `Overdue (${data.queue.overdue.length})`, color: 'text-red-600', members: data.queue.overdue },
-    { id: 'due-soon' as const, label: `Due Soon (${data.queue.dueSoon.length})`, color: 'text-amber-600', members: data.queue.dueSoon },
-    { id: 'never' as const, label: `Never Spoken (${data.queue.neverSpoken.length})`, color: 'text-gray-500', members: data.queue.neverSpoken },
+    { id: 'overdue' as const, label: `Overdue (${data.queue.overdue.length})`, members: data.queue.overdue },
+    { id: 'due-soon' as const, label: `Due Soon (${data.queue.dueSoon.length})`, members: data.queue.dueSoon },
   ]
 
   return (
@@ -103,7 +103,47 @@ export default function DashboardPage() {
           <div className="md:col-span-2">
             <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Speaker Queue</h2>
 
-            {/* Tabs */}
+            {/* Never Spoken — collapsible section */}
+            {data.queue.neverSpoken.length > 0 && (
+              <div className="mb-3 border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setNeverExpanded((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                >
+                  <span className="text-sm font-semibold text-gray-600">Never Spoken</span>
+                  <div className="flex items-center gap-2">
+                    <span className="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                      {data.queue.neverSpoken.length}
+                    </span>
+                    <svg
+                      className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${neverExpanded ? 'rotate-180' : ''}`}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+
+                <div
+                  style={{ maxHeight: neverExpanded ? `${data.queue.neverSpoken.length * 160}px` : '0px' }}
+                  className="overflow-hidden transition-all duration-300 ease-in-out"
+                >
+                  <div className="p-3 space-y-2 bg-white">
+                    {data.queue.neverSpoken.map((m) => (
+                      <MemberCard
+                        key={m.id}
+                        member={m}
+                        canEdit={editable}
+                        onLogSpeaking={setLogTarget}
+                        onSaved={load}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Tabs: Overdue + Due Soon */}
             <div className="flex gap-1 mb-3 bg-gray-100 rounded-lg p-1">
               {queueSections.map((s) => (
                 <button
