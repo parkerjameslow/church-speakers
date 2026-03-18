@@ -86,12 +86,12 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
   const [isMoved, setIsMoved] = useState(!!member.is_moved)
   const [isStake, setIsStake] = useState(!!member.is_stake)
   const [savedLabel, setSavedLabel] = useState(false)
-  const lastTalk = member.recent_talks?.[0] ?? null
   const [form, setForm] = useState({
     name: member.name,
-    talk_date: lastTalk?.date ?? '',
-    talk_topic: lastTalk?.topic ?? '',
   })
+  const [talks, setTalks] = useState(
+    (member.recent_talks ?? []).map((t) => ({ id: t.id, date: t.date, topic: t.topic ?? '' }))
+  )
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -141,18 +141,19 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
         }),
       })
     }
-    if (lastTalk && (form.talk_date !== lastTalk.date || form.talk_topic !== (lastTalk.topic ?? ''))) {
-      await fetch(`/api/speaking-records/${lastTalk.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: form.talk_date,
-          topic: form.talk_topic || null,
-          duration_minutes: null,
-          notes: null,
-        }),
+    const originalTalks = member.recent_talks ?? []
+    await Promise.all(
+      talks.map((t) => {
+        const orig = originalTalks.find((o) => o.id === t.id)
+        if (!orig || t.date !== orig.date || t.topic !== (orig.topic ?? '')) {
+          return fetch(`/api/speaking-records/${t.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ date: t.date, topic: t.topic || null, duration_minutes: null, notes: null }),
+          })
+        }
       })
-    }
+    )
     setSaving(false)
     setEditing(false)
     onSaved?.()
@@ -362,25 +363,29 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
               />
             </div>
 
-            {lastTalk && (
+            {talks.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">
-                  Most Recent Talk
+                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
+                  Talk History
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="date"
-                    className={inputCls}
-                    value={form.talk_date}
-                    onChange={(e) => setForm({ ...form, talk_date: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Topic…"
-                    className={inputCls}
-                    value={form.talk_topic}
-                    onChange={(e) => setForm({ ...form, talk_topic: e.target.value })}
-                  />
+                <div className="space-y-2">
+                  {talks.map((t, i) => (
+                    <div key={t.id} className="grid grid-cols-2 gap-2">
+                      <input
+                        type="date"
+                        className={inputCls}
+                        value={t.date}
+                        onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, date: e.target.value } : x))}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Topic…"
+                        className={inputCls}
+                        value={t.topic}
+                        onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, topic: e.target.value } : x))}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
