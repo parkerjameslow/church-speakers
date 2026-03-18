@@ -36,16 +36,43 @@ function StatusBadge({ status }: { status: DueStatus }) {
   )
 }
 
+function CategoryToggle({
+  value,
+  onChange,
+}: {
+  value: Category
+  onChange: (cat: Category) => void
+}) {
+  return (
+    <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+      {(['adult', 'youth'] as Category[]).map((cat) => (
+        <button
+          key={cat}
+          onClick={(e) => { e.stopPropagation(); onChange(cat) }}
+          className={`px-3 py-1.5 text-xs font-semibold capitalize transition ${
+            value === cat
+              ? 'bg-gray-900 text-white'
+              : 'bg-white text-gray-500 hover:bg-gray-50'
+          }`}
+        >
+          {cat === 'adult' ? 'Adult' : 'Youth'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [editing, setEditing] = useState(false)
   const [cadence, setCadence] = useState(member.cadence_months)
-  const [cadenceSaved, setCadenceSaved] = useState(false)
+  const [category, setCategory] = useState<Category>(
+    (member.category_override ?? member.category ?? 'adult') as Category
+  )
+  const [savedLabel, setSavedLabel] = useState(false)
   const [form, setForm] = useState({
     category: (member.category_override ?? member.category ?? 'adult') as Category,
     name: member.name,
-    phone: member.phone ?? '',
-    email: member.email ?? '',
     cadence_months: member.cadence_months.toString(),
     is_active: member.is_active !== false,
   })
@@ -53,8 +80,7 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
 
   const status = member.due_status ?? 'never'
 
-  async function saveCadence(value: number) {
-    setCadence(value)
+  async function patchMember(patch: Record<string, unknown>) {
     await fetch(`/api/members/${member.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -65,14 +91,25 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         email: member.email,
         household_id: member.household_id,
         notes: member.notes,
-        cadence_months: value,
+        cadence_months: cadence,
         is_active: member.is_active,
-        category_override: member.category_override ?? null,
+        category_override: category,
+        ...patch,
       }),
     })
-    setCadenceSaved(true)
-    setTimeout(() => setCadenceSaved(false), 2000)
+    setSavedLabel(true)
+    setTimeout(() => setSavedLabel(false), 2000)
     onSaved?.()
+  }
+
+  async function saveCadence(value: number) {
+    setCadence(value)
+    await patchMember({ cadence_months: value })
+  }
+
+  async function saveCategory(value: Category) {
+    setCategory(value)
+    await patchMember({ category_override: value })
   }
 
   async function saveEdit() {
@@ -83,8 +120,8 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
       body: JSON.stringify({
         name: form.name,
         birth_date: member.birth_date,
-        phone: form.phone || null,
-        email: form.email || null,
+        phone: member.phone,
+        email: member.email,
         household_id: member.household_id,
         notes: member.notes,
         cadence_months: parseInt(form.cadence_months),
@@ -92,6 +129,8 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         category_override: form.category,
       }),
     })
+    setCadence(parseInt(form.cadence_months))
+    setCategory(form.category)
     setSaving(false)
     setEditing(false)
     onSaved?.()
@@ -107,13 +146,13 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         className="p-4 cursor-pointer select-none"
         onClick={() => !editing && setExpanded((v) => !v)}
       >
-        {/* Row 1: Name + category + status badge | days since talk + Add Talk button */}
-        <div className="flex items-center justify-between gap-3 mb-3">
+        {/* Name + category + status badge | days since talk + Add Talk button */}
+        <div className="flex items-center justify-between gap-3">
           {/* Left: name, category, status */}
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <span className="font-semibold text-gray-900 leading-tight">{member.name}</span>
             <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
-              {member.category === 'youth' ? 'Youth' : 'Adult'}
+              {category === 'youth' ? 'Youth' : 'Adult'}
             </span>
             <StatusBadge status={status} />
           </div>
@@ -140,57 +179,23 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
             )}
           </div>
         </div>
-
-        {/* Row 2: Most Recent Talk bordered box */}
-        {member.recent_talks && member.recent_talks.length > 0 && (
-          <div className="border border-gray-100 rounded-lg p-2.5 bg-gray-50">
-            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-              Most Recent Talk and Topic
-            </div>
-            <div className="space-y-1">
-              {member.recent_talks.map((talk, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-xs">
-                  <span className="font-medium text-gray-700 whitespace-nowrap shrink-0">
-                    {formatDateShort(talk.date)}
-                  </span>
-                  <span className="text-gray-300">—</span>
-                  {talk.topic ? (
-                    <span className="text-gray-500 truncate">{talk.topic}</span>
-                  ) : (
-                    <span className="text-gray-300 italic">No topic</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Expandable detail section */}
       <div
-        style={{ maxHeight: expanded ? '520px' : '0px', opacity: expanded ? 1 : 0 }}
+        style={{ maxHeight: expanded ? '600px' : '0px', opacity: expanded ? 1 : 0 }}
         className="overflow-hidden transition-all duration-300 ease-in-out"
       >
         <div className="border-t border-gray-100 px-4 pb-4">
           {!editing ? (
             <div className="space-y-3 pt-3">
-              {/* Contact */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Phone</div>
-                  <div className="text-gray-700">{member.phone ?? <span className="text-gray-300">—</span>}</div>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Email</div>
-                  <div className="text-gray-700 truncate">{member.email ?? <span className="text-gray-300">—</span>}</div>
-                </div>
-              </div>
-
-              {/* Cadence */}
+              {/* Cadence + Category toggle */}
               <div>
-                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Speaking Cadence</div>
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Speaking Cadence
+                </div>
                 {canEdit ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <select
                       value={cadence}
                       onChange={(e) => saveCadence(parseInt(e.target.value))}
@@ -201,17 +206,22 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                       <option value={12}>Every 12 months</option>
                       <option value={24}>Every 24 months</option>
                     </select>
-                    {cadenceSaved && <span className="text-xs text-green-500 font-medium">Saved ✓</span>}
+                    <CategoryToggle value={category} onChange={saveCategory} />
+                    {savedLabel && <span className="text-xs text-green-500 font-medium">Saved ✓</span>}
                   </div>
                 ) : (
-                  <div className="text-sm text-gray-700">Every {cadence} months</div>
+                  <div className="text-sm text-gray-700">
+                    Every {cadence} months · {category === 'youth' ? 'Youth' : 'Adult'}
+                  </div>
                 )}
               </div>
 
-              {/* Full talk history */}
+              {/* Talk history */}
               {member.recent_talks && member.recent_talks.length > 0 && (
                 <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Talk History</div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                    Talk History
+                  </div>
                   <div className="space-y-1">
                     {member.recent_talks.map((talk, i) => (
                       <div key={i} className="flex items-center gap-1.5 text-sm">
@@ -244,34 +254,10 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
           ) : (
             /* Edit form */
             <div className="space-y-3 pt-3" onClick={(e) => e.stopPropagation()}>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Category</label>
-                  <select
-                    className={inputCls}
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value as Category })}
-                  >
-                    <option value="adult">Adult</option>
-                    <option value="youth">Youth</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Cadence</label>
-                  <select
-                    className={inputCls}
-                    value={form.cadence_months}
-                    onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}
-                  >
-                    <option value="6">6 months</option>
-                    <option value="12">12 months</option>
-                    <option value="24">24 months</option>
-                  </select>
-                </div>
-              </div>
-
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Full Name</label>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   className={inputCls}
@@ -280,24 +266,36 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    className={inputCls}
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</label>
-                  <input
-                    type="email"
-                    className={inputCls}
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  />
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                  Speaking Cadence
+                </label>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <select
+                    className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white"
+                    value={form.cadence_months}
+                    onChange={(e) => setForm({ ...form, cadence_months: e.target.value })}
+                  >
+                    <option value="6">Every 6 months</option>
+                    <option value="12">Every 12 months</option>
+                    <option value="24">Every 24 months</option>
+                  </select>
+                  <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                    {(['adult', 'youth'] as Category[]).map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => setForm({ ...form, category: cat })}
+                        className={`px-3 py-1.5 text-xs font-semibold capitalize transition ${
+                          form.category === cat
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-white text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {cat === 'adult' ? 'Adult' : 'Youth'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 

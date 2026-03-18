@@ -107,21 +107,10 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Category + Cadence */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-              <select
-                className={inputClass}
-                value={form.category}
-                onChange={(e) => handleCategoryChange(e.target.value as 'adult' | 'youth')}
-              >
-                <option value="adult">Adult</option>
-                <option value="youth">Youth</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Cadence</label>
+          {/* Cadence + Category toggle */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Speaking Cadence</label>
+            <div className="flex items-center gap-2">
               <select
                 className={inputClass}
                 value={form.cadence_months}
@@ -131,6 +120,22 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
                   <option key={n} value={n}>Every {n} months</option>
                 ))}
               </select>
+              <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+                {(['adult', 'youth'] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleCategoryChange(cat)}
+                    className={`px-3 py-2 text-sm font-semibold capitalize transition ${
+                      form.category === cat
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    {cat === 'adult' ? 'Adult' : 'Youth'}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -144,28 +149,6 @@ export default function MemberModal({ member, onClose, onSaved }: Props) {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
             />
-          </div>
-
-          {/* Phone + Email */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-              <input
-                type="tel"
-                className={inputClass}
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                className={inputClass}
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-              />
-            </div>
           </div>
 
           {/* Birth date (optional, for age-based auto-category) */}
