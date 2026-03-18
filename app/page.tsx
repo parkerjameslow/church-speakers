@@ -74,6 +74,66 @@ export default function HomePage() {
 
         {!loading && (
           <div>
+            {/* Search */}
+            <input
+              type="search"
+              placeholder="Search members…"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white mb-3"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            {/* Filter + Sort */}
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+                {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${
+                      filter === f
+                        ? 'bg-white shadow-sm text-gray-900'
+                        : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+              >
+                Days Since Talk
+                <svg
+                  className={`w-3 h-3 transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Member count label */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                Since Last Talk
+              </h2>
+              <span className="text-xs text-gray-400">{filteredMembers.length} speakers</span>
+            </div>
+
+            {filteredMembers.length === 0 ? (
+              <div className="text-center py-16 text-gray-400 text-sm">
+                {search ? 'No members match your search.' : 'No speaking records yet. Log a talk to get started.'}
+              </div>
+            ) : (
+              <div className="space-y-3 mb-4">
+                {filteredMembers.map((m) => (
+                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
+                ))}
+              </div>
+            )}
+
             {/* Never Spoken collapsible section */}
             {neverSpokenMembers.length > 0 && (
               <div className="mb-4">
@@ -105,6 +165,36 @@ export default function HomePage() {
                       >
                         {m.name}
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Stake collapsible section */}
+            {stakeMembers.length > 0 && (
+              <div className="mb-4">
+                <button
+                  onClick={() => setStakeExpanded((x) => !x)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <span>Stake</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                      {stakeMembers.length}
+                    </span>
+                  </div>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${stakeExpanded ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {stakeExpanded && (
+                  <div className="mt-1 space-y-3">
+                    {stakeMembers.map((m) => (
+                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                     ))}
                   </div>
                 )}
@@ -168,96 +258,6 @@ export default function HomePage() {
                     ))}
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* Stake collapsible section */}
-            {stakeMembers.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setStakeExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>Stake</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {stakeMembers.length}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${stakeExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {stakeExpanded && (
-                  <div className="mt-1 space-y-3">
-                    {stakeMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Search */}
-            <input
-              type="search"
-              placeholder="Search members…"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white mb-3"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-
-            {/* Filter + Sort */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-                {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${
-                      filter === f
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition"
-              >
-                Days Since Talk
-                <svg
-                  className={`w-3 h-3 transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Member count label */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-                Since Last Talk
-              </h2>
-              <span className="text-xs text-gray-400">{filteredMembers.length} speakers</span>
-            </div>
-
-            {filteredMembers.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 text-sm">
-                {search ? 'No members match your search.' : 'No speaking records yet. Log a talk to get started.'}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredMembers.map((m) => (
-                  <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
-                ))}
               </div>
             )}
           </div>
