@@ -82,12 +82,11 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
     (member.category_override ?? member.category ?? 'adult') as Category
   )
   const [savedLabel, setSavedLabel] = useState(false)
+  const lastTalk = member.recent_talks?.[0] ?? null
   const [form, setForm] = useState({
     name: member.name,
-    cadence_months: member.cadence_months,
-    category: (member.category_override ?? member.category ?? 'adult') as Category,
-    is_active: member.is_active !== false,
-    is_moved: !!member.is_moved,
+    talk_date: lastTalk?.date ?? '',
+    talk_topic: lastTalk?.topic ?? '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -118,24 +117,38 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
 
   async function saveEdit() {
     setSaving(true)
-    await fetch(`/api/members/${member.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: form.name,
-        birth_date: member.birth_date,
-        phone: member.phone,
-        email: member.email,
-        household_id: member.household_id,
-        notes: member.notes,
-        cadence_months: form.cadence_months,
-        is_active: form.is_active,
-        is_moved: form.is_moved,
-        category_override: form.category,
-      }),
-    })
-    setCadence(form.cadence_months)
-    setCategory(form.category)
+    // Save name if changed
+    if (form.name !== member.name) {
+      await fetch(`/api/members/${member.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          birth_date: member.birth_date,
+          phone: member.phone,
+          email: member.email,
+          household_id: member.household_id,
+          notes: member.notes,
+          cadence_months: cadence,
+          is_active: member.is_active,
+          is_moved: member.is_moved,
+          category_override: category,
+        }),
+      })
+    }
+    // Save most recent talk if it exists and was changed
+    if (lastTalk && (form.talk_date !== lastTalk.date || form.talk_topic !== (lastTalk.topic ?? ''))) {
+      await fetch(`/api/speaking-records/${lastTalk.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: form.talk_date,
+          topic: form.talk_topic || null,
+          duration_minutes: null,
+          notes: null,
+        }),
+      })
+    }
     setSaving(false)
     setEditing(false)
     onSaved?.()
@@ -267,44 +280,28 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                 />
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                  Speaking Cadence
-                </label>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Toggle
-                    options={CADENCE_OPTIONS}
-                    value={form.cadence_months}
-                    onChange={(v) => setForm({ ...form, cadence_months: v })}
-                  />
-                  <Toggle
-                    options={CATEGORY_OPTIONS}
-                    value={form.category}
-                    onChange={(v) => setForm({ ...form, category: v })}
-                  />
+              {lastTalk && (
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    Most Recent Talk
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      className={inputCls}
+                      value={form.talk_date}
+                      onChange={(e) => setForm({ ...form, talk_date: e.target.value })}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Topic…"
+                      className={inputCls}
+                      value={form.talk_topic}
+                      onChange={(e) => setForm({ ...form, talk_topic: e.target.value })}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={!form.is_active}
-                    onChange={(e) => setForm({ ...form, is_active: !e.target.checked })}
-                    className="rounded"
-                  />
-                  Inactive
-                </label>
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={form.is_moved}
-                    onChange={(e) => setForm({ ...form, is_moved: e.target.checked })}
-                    className="rounded"
-                  />
-                  Moved
-                </label>
-              </div>
+              )}
 
               <div className="flex gap-2 pt-1">
                 <button

@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     const placeholders = ids.map(() => '?').join(',')
     const allTalks = db
       .prepare(
-        `SELECT member_id, date, topic FROM speaking_records
+        `SELECT id, member_id, date, topic FROM speaking_records
          WHERE member_id IN (${placeholders})
          ORDER BY date DESC, id DESC`
       )

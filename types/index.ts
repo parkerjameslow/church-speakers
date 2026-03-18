@@ -40,7 +40,7 @@ export interface Member {
   category?: Category
   category_override?: Category | null
   speaking_count?: number
-  recent_talks?: { date: string; topic: string | null }[]
+  recent_talks?: { id: number; date: string; topic: string | null }[]
 }
 
 export interface SpeakingRecord {
