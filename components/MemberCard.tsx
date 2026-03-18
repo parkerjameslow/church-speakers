@@ -183,11 +183,11 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
           </div>
 
           {member.days_since_last_talk != null && (
-            <div className="flex flex-col items-end shrink-0">
-              <span className="text-4xl font-bold text-gray-900 leading-none">
+            <div className="flex items-baseline gap-1.5 shrink-0">
+              <span className="text-lg font-bold text-gray-700 leading-none">
                 {member.days_since_last_talk}
               </span>
-              <span className="text-[11px] text-gray-400 whitespace-nowrap mt-0.5">days since last talk</span>
+              <span className="text-xs text-gray-400 whitespace-nowrap">days since last talk</span>
             </div>
           )}
         </div>
