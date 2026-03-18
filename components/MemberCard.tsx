@@ -47,16 +47,16 @@ function Toggle({
   onChange: (v: any) => void
 }) {
   return (
-    <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0">
+    <div className="flex items-center gap-0.5 bg-gray-100 rounded-full p-0.5 shrink-0">
       {options.map((opt) => (
         <button
           key={String(opt.value)}
           type="button"
           onClick={(e) => { e.stopPropagation(); onChange(opt.value) }}
-          className={`px-3 py-1.5 text-xs font-semibold transition ${
+          className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
             value === opt.value
-              ? 'bg-gray-900 text-white'
-              : 'bg-white text-gray-500 hover:bg-gray-50'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-400 hover:text-gray-600'
           }`}
         >
           {opt.label}
@@ -256,55 +256,56 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
         <div className="border-t border-gray-100 px-4 pb-4">
           {!editing ? (
             <div className="space-y-3 pt-3">
-              {/* Cadence + Category toggle */}
-              <div>
-                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">
-                  Speaking Cadence
-                </div>
-                {canEdit ? (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Toggle
-                      options={CADENCE_OPTIONS}
-                      value={cadence}
-                      onChange={(v) => { setCadence(v); patchMember({ cadence_months: v }) }}
-                    />
-                    <Toggle
-                      options={CATEGORY_OPTIONS}
-                      value={category}
-                      onChange={(v) => { setCategory(v); patchMember({ category_override: v }) }}
-                    />
-                    {savedLabel && <span className="text-xs text-green-500 font-medium">Saved ✓</span>}
+              {/* Cadence + Talk History inline */}
+              <div className="flex gap-4">
+                <div className="shrink-0">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                    Cadence
                   </div>
-                ) : (
-                  <div className="text-sm text-gray-700">
-                    Every {cadence} months · {category === 'youth' ? 'Youth' : 'Adult'}
+                  {canEdit ? (
+                    <div className="flex flex-col gap-1.5">
+                      <Toggle
+                        options={CADENCE_OPTIONS}
+                        value={cadence}
+                        onChange={(v) => { setCadence(v); patchMember({ cadence_months: v }) }}
+                      />
+                      <Toggle
+                        options={CATEGORY_OPTIONS}
+                        value={category}
+                        onChange={(v) => { setCategory(v); patchMember({ category_override: v }) }}
+                      />
+                      {savedLabel && <span className="text-xs text-green-500 font-medium">Saved ✓</span>}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-700">
+                      Every {cadence} months · {category === 'youth' ? 'Youth' : 'Adult'}
+                    </div>
+                  )}
+                </div>
+
+                {member.recent_talks && member.recent_talks.length > 0 && (
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
+                      Talk History
+                    </div>
+                    <div className="space-y-1">
+                      {member.recent_talks.map((talk, i) => (
+                        <div key={i} className="flex items-center gap-1.5 text-sm">
+                          <span className="font-medium text-gray-800 whitespace-nowrap shrink-0">
+                            {formatDateShort(talk.date)}
+                          </span>
+                          <span className="text-gray-300">—</span>
+                          {talk.topic ? (
+                            <span className="text-gray-500 truncate">{talk.topic}</span>
+                          ) : (
+                            <span className="text-gray-300 italic">No topic</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
-
-              {/* Talk history */}
-              {member.recent_talks && member.recent_talks.length > 0 && (
-                <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">
-                    Talk History
-                  </div>
-                  <div className="space-y-1">
-                    {member.recent_talks.map((talk, i) => (
-                      <div key={i} className="flex items-center gap-1.5 text-sm">
-                        <span className="font-medium text-gray-800 whitespace-nowrap shrink-0">
-                          {formatDateShort(talk.date)}
-                        </span>
-                        <span className="text-gray-300">—</span>
-                        {talk.topic ? (
-                          <span className="text-gray-500">{talk.topic}</span>
-                        ) : (
-                          <span className="text-gray-300 italic">No topic</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {canEdit && (
                 <div className="flex justify-end">
