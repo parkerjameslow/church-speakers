@@ -53,17 +53,9 @@ export default function HomePage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-gray-900 tracking-tight">
-              Speaker Tracker
-            </span>
-            <button
-              onClick={() => setAddModal(true)}
-              className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
-            >
-              + Add Member
-            </button>
-          </div>
+          <span className="text-sm font-semibold text-gray-900 tracking-tight">
+            Speaker Tracker
+          </span>
         </div>
       </header>
 
@@ -85,6 +77,7 @@ export default function HomePage() {
 
             {/* Filter + Sort */}
             <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
               <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
                 {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
                   <button
@@ -99,6 +92,13 @@ export default function HomePage() {
                     {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
                   </button>
                 ))}
+              </div>
+              <button
+                onClick={() => setAddModal(true)}
+                className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
+              >
+                + Add Member
+              </button>
               </div>
               <button
                 onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
