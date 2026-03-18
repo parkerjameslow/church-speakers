@@ -174,16 +174,6 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
         <div className="border-t border-gray-100 px-4 pb-4">
           {!editing ? (
             <div className="space-y-3 pt-3">
-              {canEdit && (
-                <div className="flex justify-end">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setEditing(true) }}
-                    className="text-xs font-semibold text-gray-500 hover:text-gray-800 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition border border-gray-200"
-                  >
-                    Edit
-                  </button>
-                </div>
-              )}
               {/* Contact */}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -240,6 +230,16 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, canEdit }: 
                 </div>
               )}
 
+              {canEdit && (
+                <div className="pt-1">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditing(true) }}
+                    className="w-full border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 py-1.5 rounded-lg text-xs font-semibold transition"
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             /* Edit form */
