@@ -35,7 +35,6 @@ export default function HomePage() {
   const movedMembers = members.filter((m) => !!m.is_moved && !m.is_stake)
   const stakeMembers = members.filter((m) => !!m.is_stake)
   const activeMembers = members.filter((m) => m.is_active !== false && m.is_active !== 0 && !m.is_moved && !m.is_stake)
-
   const neverSpokenMembers = activeMembers.filter((m) => m.due_status === 'never')
 
   const filteredMembers = activeMembers
@@ -49,23 +48,21 @@ export default function HomePage() {
     })
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2]">
+    <div className="min-h-screen bg-[#F0F0F0]">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-2xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#111111] flex items-center justify-center">
-              <span className="text-accent font-black text-[10px]">ST</span>
+            <div className="w-7 h-7 rounded-lg bg-[#1C1C1E] flex items-center justify-center">
+              <span className="text-[#AAFF00] font-black text-[10px]">ST</span>
             </div>
-            <span className="text-sm font-bold text-[#111111] tracking-tight">Speaker Tracker</span>
+            <span className="text-sm font-black text-[#1C1C1E]">Speaker Tracker</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6">
-        {loading && (
-          <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
-        )}
+      <main className="max-w-2xl mx-auto px-4 py-5">
+        {loading && <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>}
 
         {!loading && (
           <div>
@@ -77,13 +74,13 @@ export default function HomePage() {
               <input
                 type="search"
                 placeholder="Search members…"
-                className="w-full bg-white border-0 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent shadow-sm"
+                className="w-full bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#AAFF00] shadow-sm border-0"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
 
-            {/* Filter + Sort */}
+            {/* Filter + actions */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm">
@@ -92,9 +89,7 @@ export default function HomePage() {
                       key={f}
                       onClick={() => setFilter(f)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
-                        filter === f
-                          ? 'bg-[#111111] text-white shadow-sm'
-                          : 'text-gray-400 hover:text-gray-600'
+                        filter === f ? 'bg-[#1C1C1E] text-white' : 'text-gray-400 hover:text-gray-700'
                       }`}
                     >
                       {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
@@ -103,39 +98,34 @@ export default function HomePage() {
                 </div>
                 <button
                   onClick={() => setAddModal(true)}
-                  className="text-xs font-bold bg-accent text-[#111111] px-3 py-1.5 rounded-xl hover:bg-accent/90 transition shadow-sm"
+                  className="text-xs font-bold bg-[#AAFF00] text-[#1C1C1E] px-3.5 py-2 rounded-xl hover:bg-[#99ee00] transition shadow-sm"
                 >
                   + Add Member
                 </button>
               </div>
               <button
                 onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#111111] px-2 py-1.5 rounded-lg hover:bg-white transition"
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#1C1C1E] px-2 py-1.5 rounded-lg hover:bg-white transition font-medium"
               >
                 Days Since Talk
-                <svg
-                  className={`w-3 h-3 transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}
-                >
+                <svg className={`w-3 h-3 transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
             </div>
 
-            {/* Member count label */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Since Last Talk
-              </h2>
+            {/* Count */}
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Since Last Talk</p>
               <span className="text-xs text-gray-400 font-medium">{filteredMembers.length} speakers</span>
             </div>
 
             {filteredMembers.length === 0 ? (
               <div className="text-center py-16 text-gray-400 text-sm">
-                {search ? 'No members match your search.' : 'No speaking records yet. Log a talk to get started.'}
+                {search ? 'No members match your search.' : 'No speaking records yet.'}
               </div>
             ) : (
-              <div className="space-y-3 mb-4">
+              <div className="space-y-2.5 mb-4">
                 {filteredMembers.map((m) => (
                   <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                 ))}
@@ -149,21 +139,16 @@ export default function HomePage() {
               { label: 'Inactive', count: inactiveMembers.length, expanded: inactiveExpanded, toggle: () => setInactiveExpanded(x => !x), members: inactiveMembers, simple: false },
               { label: 'Moved', count: movedMembers.length, expanded: movedExpanded, toggle: () => setMovedExpanded(x => !x), members: movedMembers, simple: false },
             ].filter(s => s.count > 0).map(s => (
-              <div key={s.label} className="mb-3">
+              <div key={s.label} className="mb-2.5">
                 <button
                   onClick={s.toggle}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-2xl shadow-sm text-sm font-bold text-[#111111] hover:shadow-md transition"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-2xl shadow-sm text-sm font-bold text-[#1C1C1E] hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-2">
                     <span>{s.label}</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#111111] text-white">
-                      {s.count}
-                    </span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#1C1C1E] text-white">{s.count}</span>
                   </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${s.expanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
+                  <svg className={`w-4 h-4 text-gray-400 transition-transform ${s.expanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
@@ -172,18 +157,13 @@ export default function HomePage() {
                     {s.simple ? (
                       <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                         {s.members.map((m, i) => (
-                          <div
-                            key={m.id}
-                            className={`px-4 py-3 text-sm font-medium text-[#111111] ${
-                              i < s.members.length - 1 ? 'border-b border-gray-50' : ''
-                            }`}
-                          >
+                          <div key={m.id} className={`px-4 py-3 text-sm font-medium text-[#1C1C1E] ${i < s.members.length - 1 ? 'border-b border-gray-50' : ''}`}>
                             {m.name}
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         {s.members.map((m) => (
                           <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
                         ))}
@@ -198,24 +178,10 @@ export default function HomePage() {
       </main>
 
       {addModal && (
-        <MemberModal
-          onClose={() => setAddModal(false)}
-          onSaved={() => {
-            setAddModal(false)
-            load()
-          }}
-        />
+        <MemberModal onClose={() => setAddModal(false)} onSaved={() => { setAddModal(false); load() }} />
       )}
-
       {logTarget && (
-        <SpeakingRecordModal
-          member={logTarget}
-          onClose={() => setLogTarget(null)}
-          onSaved={() => {
-            setLogTarget(null)
-            load()
-          }}
-        />
+        <SpeakingRecordModal member={logTarget} onClose={() => setLogTarget(null)} onSaved={() => { setLogTarget(null); load() }} />
       )}
     </div>
   )

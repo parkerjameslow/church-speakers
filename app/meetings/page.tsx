@@ -22,7 +22,7 @@ export default function MeetingsPage() {
   const past = meetings.filter((m) => m.date < today)
 
   return (
-    <div className="md:pl-16 pb-20 md:pb-0 min-h-screen">
+    <div className="md:pl-[60px] pb-20 md:pb-0 min-h-screen">
       <Navigation />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
