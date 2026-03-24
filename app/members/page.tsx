@@ -140,7 +140,7 @@ export default function MembersPage() {
   const youthCount = members.filter((m) => m.category === 'youth' && m.is_active !== false && !m.is_moved).length
 
   return (
-    <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
+    <div className="md:pl-16 pb-20 md:pb-0 min-h-screen">
       <Navigation />
 
       <main className="max-w-5xl mx-auto px-4 py-6">

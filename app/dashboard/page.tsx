@@ -42,8 +42,8 @@ export default function DashboardPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-400">Loading…</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F2F2F2]">
+        <div className="text-gray-400 text-sm">Loading…</div>
       </div>
     )
   }
@@ -54,15 +54,19 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
+    <div className="md:pl-16 pb-20 md:pb-0 min-h-screen">
       <Navigation />
 
       <main className="max-w-5xl mx-auto px-4 py-6">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-[#111111]">Dashboard</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Sacrament Speaker Tracker</p>
+          </div>
           <Link
             href="/meetings/new"
-            className="bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+            className="bg-accent text-[#111111] font-bold text-sm px-4 py-2 rounded-xl hover:bg-accent/90 transition"
           >
             + Plan Meeting
           </Link>
@@ -70,29 +74,40 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: 'Active Adults', value: data.stats.totalAdults, color: 'text-gray-700' },
-            { label: 'Active Youth', value: data.stats.totalYouth, color: 'text-purple-700' },
-            { label: 'Meetings This Year', value: data.stats.meetingsThisYear, color: 'text-green-700' },
-            { label: 'Talks This Year', value: data.stats.recordsThisYear, color: 'text-gray-700' },
-          ].map((s) => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
-              <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
-            </div>
-          ))}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="text-3xl font-black text-[#111111]">{data.stats.totalAdults}</div>
+            <div className="text-xs text-gray-400 mt-1 font-medium">Active Adults</div>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="text-3xl font-black text-[#111111]">{data.stats.totalYouth}</div>
+            <div className="text-xs text-gray-400 mt-1 font-medium">Active Youth</div>
+          </div>
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="text-3xl font-black text-[#111111]">{data.stats.meetingsThisYear}</div>
+            <div className="text-xs text-gray-400 mt-1 font-medium">Meetings This Year</div>
+          </div>
+          <div className="bg-[#111111] rounded-2xl p-4 shadow-sm">
+            <div className="text-3xl font-black text-accent">{data.stats.recordsThisYear}</div>
+            <div className="text-xs text-gray-500 mt-1 font-medium">Talks This Year</div>
+          </div>
         </div>
 
         {/* Alert bar */}
         {(data.stats.overdueCount > 0 || data.stats.dueSoonCount > 0) && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-6 flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
-            <span className="text-sm text-amber-800">
+          <div className="bg-white border-l-4 border-red-400 rounded-2xl p-4 mb-6 flex items-center gap-3 shadow-sm">
+            <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-red-400">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <span className="text-sm text-gray-700">
               {data.stats.overdueCount > 0 && (
-                <strong>{data.stats.overdueCount} speaker{data.stats.overdueCount > 1 ? 's' : ''} overdue. </strong>
+                <strong className="text-[#111111]">{data.stats.overdueCount} speaker{data.stats.overdueCount > 1 ? 's' : ''} overdue. </strong>
               )}
               {data.stats.dueSoonCount > 0 && (
-                <span>{data.stats.dueSoonCount} speaker{data.stats.dueSoonCount > 1 ? 's' : ''} due within 30 days.</span>
+                <span className="text-gray-500">{data.stats.dueSoonCount} speaker{data.stats.dueSoonCount > 1 ? 's' : ''} due within 30 days.</span>
               )}
             </span>
           </div>
@@ -101,16 +116,18 @@ export default function DashboardPage() {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Queue */}
           <div className="md:col-span-2">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">Speaker Queue</h2>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Speaker Queue</h2>
 
-            {/* Tabs: Overdue + Due Soon */}
-            <div className="flex gap-1 mb-3 bg-gray-100 rounded-lg p-1">
+            {/* Tabs */}
+            <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm">
               {queueSections.map((s) => (
                 <button
                   key={s.id}
                   onClick={() => setActiveTab(s.id)}
-                  className={`flex-1 text-xs font-medium py-1.5 rounded-md transition ${
-                    activeTab === s.id ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                  className={`flex-1 text-xs font-bold py-2 rounded-lg transition ${
+                    activeTab === s.id
+                      ? 'bg-[#111111] text-white shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
                   {s.label}
@@ -123,14 +140,14 @@ export default function DashboardPage() {
                 <div key={s.id} className="space-y-3">
                   {/* Never Spoken — collapsible, only on Overdue tab */}
                   {s.id === 'overdue' && data.queue.neverSpoken.length > 0 && (
-                    <div className="border border-gray-200 rounded-xl overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                       <button
                         onClick={() => setNeverExpanded((v) => !v)}
-                        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition text-left"
                       >
-                        <span className="text-sm font-semibold text-gray-600">Never Spoken</span>
+                        <span className="text-sm font-bold text-[#111111]">Never Spoken</span>
                         <div className="flex items-center gap-2">
-                          <span className="bg-gray-200 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full">
+                          <span className="bg-[#111111] text-white text-xs font-bold px-2 py-0.5 rounded-full">
                             {data.queue.neverSpoken.length}
                           </span>
                           <svg
@@ -145,7 +162,7 @@ export default function DashboardPage() {
                         style={{ maxHeight: neverExpanded ? `${data.queue.neverSpoken.length * 160}px` : '0px' }}
                         className="overflow-hidden transition-all duration-300 ease-in-out"
                       >
-                        <div className="p-3 space-y-2 bg-white">
+                        <div className="p-3 space-y-2 border-t border-gray-50">
                           {data.queue.neverSpoken.map((m) => (
                             <MemberCard
                               key={m.id}
@@ -161,7 +178,7 @@ export default function DashboardPage() {
                   )}
 
                   {s.members.length === 0 ? (
-                    <div className="text-center py-8 text-gray-400 text-sm bg-white rounded-xl border border-gray-100">
+                    <div className="text-center py-10 text-gray-400 text-sm bg-white rounded-2xl shadow-sm">
                       No speakers in this category
                     </div>
                   ) : (
@@ -183,12 +200,12 @@ export default function DashboardPage() {
           {/* Recent Meetings */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide">Recent Meetings</h2>
-              <Link href="/meetings" className="text-xs text-gray-600 hover:underline">See all</Link>
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Recent Meetings</h2>
+              <Link href="/meetings" className="text-xs text-gray-400 hover:text-[#111111] transition font-medium">See all</Link>
             </div>
             <div className="space-y-2">
               {data.recentMeetings.length === 0 ? (
-                <div className="text-center py-6 text-gray-400 text-sm bg-white rounded-xl border border-gray-100">
+                <div className="text-center py-8 text-gray-400 text-sm bg-white rounded-2xl shadow-sm">
                   No meetings yet
                 </div>
               ) : (
@@ -196,11 +213,11 @@ export default function DashboardPage() {
                   <Link
                     key={m.id}
                     href={`/meetings/${m.id}`}
-                    className="block bg-white rounded-xl border border-gray-100 shadow-sm p-3 hover:border-gray-200 transition"
+                    className="block bg-white rounded-2xl shadow-sm p-4 hover:shadow-md transition"
                   >
-                    <div className="font-medium text-sm text-gray-900">{formatDateShort(m.date)}</div>
+                    <div className="font-bold text-sm text-[#111111]">{formatDateShort(m.date)}</div>
                     {m.assignments.length > 0 && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-400 mt-1 truncate">
                         {m.assignments.map((a: any) => a.member_name).join(', ')}
                       </div>
                     )}
@@ -210,7 +227,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/meetings/new"
-              className="mt-3 block text-center text-sm text-gray-600 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-xl py-3 transition"
+              className="mt-3 block text-center text-sm font-bold text-[#111111] bg-accent hover:bg-accent/90 rounded-2xl py-3 transition"
             >
               + Plan a meeting
             </Link>

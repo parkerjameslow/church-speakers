@@ -49,13 +49,16 @@ export default function HomePage() {
     })
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F2F2F2]">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <span className="text-sm font-semibold text-gray-900 tracking-tight">
-            Speaker Tracker
-          </span>
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#111111] flex items-center justify-center">
+              <span className="text-accent font-black text-[10px]">ST</span>
+            </div>
+            <span className="text-sm font-bold text-[#111111] tracking-tight">Speaker Tracker</span>
+          </div>
         </div>
       </header>
 
@@ -67,42 +70,47 @@ export default function HomePage() {
         {!loading && (
           <div>
             {/* Search */}
-            <input
-              type="search"
-              placeholder="Search members…"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 bg-white mb-3"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="relative mb-3">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2">
+                <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                type="search"
+                placeholder="Search members…"
+                className="w-full bg-white border-0 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-accent shadow-sm"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
 
             {/* Filter + Sort */}
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-              <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
-                {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
-                  <button
-                    key={f}
-                    onClick={() => setFilter(f)}
-                    className={`px-3 py-1 text-xs font-medium rounded-md transition ${
-                      filter === f
-                        ? 'bg-white shadow-sm text-gray-900'
-                        : 'text-gray-500 hover:text-gray-700'
-                    }`}
-                  >
-                    {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setAddModal(true)}
-                className="text-xs font-medium bg-gray-900 text-white px-3 py-1.5 rounded-md hover:bg-gray-700 transition"
-              >
-                + Add Member
-              </button>
+                <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm">
+                  {(['all', 'adult', 'youth'] as FilterType[]).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => setFilter(f)}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg transition ${
+                        filter === f
+                          ? 'bg-[#111111] text-white shadow-sm'
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                    >
+                      {f === 'all' ? 'All' : f === 'adult' ? 'Adults' : 'Youth'}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setAddModal(true)}
+                  className="text-xs font-bold bg-accent text-[#111111] px-3 py-1.5 rounded-xl hover:bg-accent/90 transition shadow-sm"
+                >
+                  + Add Member
+                </button>
               </div>
               <button
                 onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-100 transition"
+                className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#111111] px-2 py-1.5 rounded-lg hover:bg-white transition"
               >
                 Days Since Talk
                 <svg
@@ -116,10 +124,10 @@ export default function HomePage() {
 
             {/* Member count label */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 Since Last Talk
               </h2>
-              <span className="text-xs text-gray-400">{filteredMembers.length} speakers</span>
+              <span className="text-xs text-gray-400 font-medium">{filteredMembers.length} speakers</span>
             </div>
 
             {filteredMembers.length === 0 ? (
@@ -134,132 +142,57 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* Never Spoken collapsible section */}
-            {neverSpokenMembers.length > 0 && (
-              <div className="mb-4">
+            {/* Collapsible sections */}
+            {[
+              { label: 'Never Spoken', count: neverSpokenMembers.length, expanded: neverExpanded, toggle: () => setNeverExpanded(x => !x), members: neverSpokenMembers, simple: true },
+              { label: 'Stake', count: stakeMembers.length, expanded: stakeExpanded, toggle: () => setStakeExpanded(x => !x), members: stakeMembers, simple: false },
+              { label: 'Inactive', count: inactiveMembers.length, expanded: inactiveExpanded, toggle: () => setInactiveExpanded(x => !x), members: inactiveMembers, simple: false },
+              { label: 'Moved', count: movedMembers.length, expanded: movedExpanded, toggle: () => setMovedExpanded(x => !x), members: movedMembers, simple: false },
+            ].filter(s => s.count > 0).map(s => (
+              <div key={s.label} className="mb-3">
                 <button
-                  onClick={() => setNeverExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
+                  onClick={s.toggle}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-2xl shadow-sm text-sm font-bold text-[#111111] hover:shadow-md transition"
                 >
                   <div className="flex items-center gap-2">
-                    <span>Never Spoken</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {neverSpokenMembers.length}
+                    <span>{s.label}</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#111111] text-white">
+                      {s.count}
                     </span>
                   </div>
                   <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${neverExpanded ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 text-gray-400 transition-transform ${s.expanded ? 'rotate-180' : ''}`}
                     fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {neverExpanded && (
-                  <div className="mt-1 bg-white rounded-xl border border-gray-100 overflow-hidden">
-                    {neverSpokenMembers.map((m, i) => (
-                      <div
-                        key={m.id}
-                        className={`px-4 py-3 text-sm text-gray-800 ${
-                          i < neverSpokenMembers.length - 1 ? 'border-b border-gray-50' : ''
-                        }`}
-                      >
-                        {m.name}
+                {s.expanded && (
+                  <div className="mt-2">
+                    {s.simple ? (
+                      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                        {s.members.map((m, i) => (
+                          <div
+                            key={m.id}
+                            className={`px-4 py-3 text-sm font-medium text-[#111111] ${
+                              i < s.members.length - 1 ? 'border-b border-gray-50' : ''
+                            }`}
+                          >
+                            {m.name}
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-2">
+                        {s.members.map((m) => (
+                          <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-
-            {/* Stake collapsible section */}
-            {stakeMembers.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setStakeExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>Stake</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {stakeMembers.length}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${stakeExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {stakeExpanded && (
-                  <div className="mt-1 space-y-3">
-                    {stakeMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Inactive collapsible section */}
-            {inactiveMembers.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setInactiveExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>Inactive</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {inactiveMembers.length}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${inactiveExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {inactiveExpanded && (
-                  <div className="mt-1 space-y-3">
-                    {inactiveMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Moved collapsible section */}
-            {movedMembers.length > 0 && (
-              <div className="mb-4">
-                <button
-                  onClick={() => setMovedExpanded((x) => !x)}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-gray-100 text-sm font-medium text-gray-500 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <span>Moved</span>
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                      {movedMembers.length}
-                    </span>
-                  </div>
-                  <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${movedExpanded ? 'rotate-180' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {movedExpanded && (
-                  <div className="mt-1 space-y-3">
-                    {movedMembers.map((m) => (
-                      <MemberCard key={m.id} member={m} onLogSpeaking={setLogTarget} canEdit onSaved={load} onDeleted={load} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+            ))}
           </div>
         )}
       </main>

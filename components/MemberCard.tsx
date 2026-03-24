@@ -14,24 +14,24 @@ interface Props {
 function StatusBadge({ status }: { status: DueStatus }) {
   if (status === 'overdue')
     return (
-      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-500 border border-red-100 whitespace-nowrap">
+      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-500 border border-red-100 whitespace-nowrap">
         Overdue
       </span>
     )
   if (status === 'due-soon')
     return (
-      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 whitespace-nowrap">
+      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 whitespace-nowrap">
         Due Soon
       </span>
     )
   if (status === 'never')
     return (
-      <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap">
+      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-400 border border-gray-200 whitespace-nowrap">
         Never Spoken
       </span>
     )
   return (
-    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-600 border border-green-100 whitespace-nowrap">
+    <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-accent/20 text-[#5a7a00] border border-accent/30 whitespace-nowrap">
       On Target
     </span>
   )
@@ -47,16 +47,16 @@ function PillToggle({
   onChange: (v: any) => void
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       {options.map((opt) => (
         <button
           key={String(opt.value)}
           type="button"
           onClick={(e) => { e.stopPropagation(); onChange(opt.value) }}
-          className={`px-5 py-2 text-sm font-semibold rounded-full transition-all ${
+          className={`px-4 py-1.5 text-xs font-bold rounded-full transition-all ${
             value === opt.value
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300'
+              ? 'bg-accent text-[#111111] shadow-sm'
+              : 'bg-white/10 text-gray-400 hover:text-white border border-white/10'
           }`}
         >
           {opt.label}
@@ -165,10 +165,10 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
   }
 
   const inputCls =
-    'w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 bg-white'
+    'w-full bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
       {/* Card header */}
       <div
         className="px-5 py-4 cursor-pointer select-none"
@@ -176,19 +176,19 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="text-xl font-bold text-gray-900 leading-tight">{member.name}</span>
-            <span className="text-sm text-gray-400 font-medium whitespace-nowrap">
+            <span className="text-base font-bold text-[#111111] leading-tight">{member.name}</span>
+            <span className="text-xs text-gray-400 font-medium whitespace-nowrap">
               {category === 'youth' ? 'Youth' : 'Adult'}
             </span>
             <StatusBadge status={status} />
           </div>
 
           {member.days_since_last_talk != null && (
-            <div className="flex items-baseline gap-1.5 shrink-0">
-              <span className="text-lg font-bold text-gray-700 leading-none">
+            <div className="flex items-baseline gap-1 shrink-0">
+              <span className="text-xl font-black text-[#111111] leading-none">
                 {member.days_since_last_talk}
               </span>
-              <span className="text-xs text-gray-400 whitespace-nowrap">days since last talk</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">days</span>
             </div>
           )}
         </div>
@@ -199,215 +199,187 @@ export default function MemberCard({ member, onLogSpeaking, onSaved, onDeleted, 
         style={{ maxHeight: expanded ? '700px' : '0px', opacity: expanded ? 1 : 0 }}
         className="overflow-hidden transition-all duration-300 ease-in-out"
       >
-        <hr className="border-gray-100" />
-
-        {!editing ? (
-          <div className="px-5 py-4 space-y-3">
-            {/* Two-column panels */}
-            <div className="flex gap-3">
-              {/* Cadence + Member Type panel */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 shrink-0">
-                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
-                  Cadence
-                </div>
-                {canEdit ? (
-                  <>
-                    <PillToggle
-                      options={CADENCE_OPTIONS}
-                      value={cadence}
-                      onChange={(v) => { setCadence(v); patchMember({ cadence_months: v }) }}
-                    />
-                    <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-4 mb-2">
-                      Member Type
-                    </div>
-                    <PillToggle
-                      options={CATEGORY_OPTIONS}
-                      value={category}
-                      onChange={(v) => { setCategory(v); patchMember({ category_override: v }) }}
-                    />
-                    {savedLabel && <span className="block text-xs text-green-500 font-medium mt-2">Saved ✓</span>}
-                  </>
-                ) : (
-                  <div className="text-sm text-gray-700">
-                    Every {cadence} months · {category === 'youth' ? 'Youth' : 'Adult'}
+        <div className="bg-[#111111] mx-3 mb-3 rounded-xl overflow-hidden">
+          {!editing ? (
+            <div className="p-4 space-y-3">
+              {/* Two-column panels */}
+              <div className="flex gap-3">
+                {/* Cadence + Member Type panel */}
+                <div className="shrink-0">
+                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                    Cadence
                   </div>
-                )}
+                  {canEdit ? (
+                    <>
+                      <PillToggle
+                        options={CADENCE_OPTIONS}
+                        value={cadence}
+                        onChange={(v) => { setCadence(v); patchMember({ cadence_months: v }) }}
+                      />
+                      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-3 mb-2">
+                        Member Type
+                      </div>
+                      <PillToggle
+                        options={CATEGORY_OPTIONS}
+                        value={category}
+                        onChange={(v) => { setCategory(v); patchMember({ category_override: v }) }}
+                      />
+                      {savedLabel && <span className="block text-xs text-accent font-bold mt-2">Saved ✓</span>}
+                    </>
+                  ) : (
+                    <div className="text-sm text-gray-300">
+                      Every {cadence} months · {category === 'youth' ? 'Youth' : 'Adult'}
+                    </div>
+                  )}
+                </div>
+
+                {/* Talk History panel */}
+                <div className="flex-1 min-w-0 border-l border-white/10 pl-3">
+                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                    Talk History
+                  </div>
+                  {member.recent_talks && member.recent_talks.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {member.recent_talks.map((talk, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs">
+                          <span className="font-bold text-gray-300 whitespace-nowrap shrink-0">
+                            {formatDateShort(talk.date)}
+                          </span>
+                          <span className="text-white/20">—</span>
+                          {talk.topic ? (
+                            <span className="text-gray-500 truncate">{talk.topic}</span>
+                          ) : (
+                            <span className="text-gray-600 italic">No topic</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-600 italic">No talks recorded</span>
+                  )}
+                </div>
               </div>
 
-              {/* Talk History panel */}
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex-1 min-w-0">
-                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
-                  Talk History
+              {/* Bottom action bar */}
+              {canEdit && (
+                <div className="border-t border-white/10 pt-3 flex items-center justify-between gap-4" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-center gap-3">
+                    {[
+                      { label: 'Inactive', checked: !isActive, onChange: (e: React.ChangeEvent<HTMLInputElement>) => { const val = !e.target.checked; setIsActive(val); patchMember({ is_active: val }) } },
+                      { label: 'Moved', checked: isMoved, onChange: (e: React.ChangeEvent<HTMLInputElement>) => { setIsMoved(e.target.checked); patchMember({ is_moved: e.target.checked }) } },
+                      { label: 'Stake', checked: isStake, onChange: (e: React.ChangeEvent<HTMLInputElement>) => { setIsStake(e.target.checked); patchMember({ is_stake: e.target.checked }) } },
+                    ].map(({ label, checked, onChange }) => (
+                      <label key={label} className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                        <input type="checkbox" className="rounded accent-[#AAFF00]" checked={checked} onChange={onChange} />
+                        {label}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {onLogSpeaking && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); onLogSpeaking(member) }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-accent text-[#111111] text-xs font-bold hover:bg-accent/90 transition"
+                      >
+                        + Talk
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setEditing(true) }}
+                      className="px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-bold hover:bg-white/20 transition"
+                    >
+                      Edit
+                    </button>
+                    {onDeleted && (
+                      !confirmDelete ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
+                          className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/10 transition"
+                        >
+                          Delete
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-gray-500">Sure?</span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
+                            className="text-xs font-bold text-gray-500 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition"
+                          >
+                            No
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); deleteMember() }}
+                            className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition"
+                          >
+                            Yes
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
                 </div>
-                {member.recent_talks && member.recent_talks.length > 0 ? (
-                  <div className="space-y-1.5">
-                    {member.recent_talks.map((talk, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm">
-                        <span className="font-medium text-gray-800 whitespace-nowrap shrink-0">
-                          {formatDateShort(talk.date)}
-                        </span>
-                        <span className="text-blue-200">—</span>
-                        {talk.topic ? (
-                          <span className="text-gray-500 truncate">{talk.topic}</span>
-                        ) : (
-                          <span className="text-blue-400 italic">No topic</span>
-                        )}
+              )}
+            </div>
+          ) : (
+            /* Edit form */
+            <div className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                />
+              </div>
+
+              {talks.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
+                    Talk History
+                  </div>
+                  <div className="space-y-2">
+                    {talks.map((t, i) => (
+                      <div key={t.id} className="grid grid-cols-2 gap-2">
+                        <input
+                          type="date"
+                          className={inputCls}
+                          value={t.date}
+                          onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, date: e.target.value } : x))}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Topic…"
+                          className={inputCls}
+                          value={t.topic}
+                          onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, topic: e.target.value } : x))}
+                        />
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <span className="text-sm text-blue-300 italic">No talks recorded</span>
-                )}
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => { setEditing(false); setConfirmDelete(false) }}
+                  className="flex-1 bg-white/10 text-gray-300 py-2 rounded-lg text-xs font-bold hover:bg-white/20 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={saving}
+                  className="flex-1 bg-accent text-[#111111] py-2 rounded-lg text-xs font-bold hover:bg-accent/90 transition disabled:opacity-50"
+                >
+                  {saving ? 'Saving…' : 'Save'}
+                </button>
               </div>
             </div>
-
-            {/* Bottom action bar */}
-            {canEdit && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4" onClick={(e) => e.stopPropagation()}>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-1.5 text-sm text-gray-500 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={!isActive}
-                      onChange={(e) => {
-                        const val = !e.target.checked
-                        setIsActive(val)
-                        patchMember({ is_active: val })
-                      }}
-                    />
-                    Inactive
-                  </label>
-                  <label className="flex items-center gap-1.5 text-sm text-gray-500 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={isMoved}
-                      onChange={(e) => {
-                        setIsMoved(e.target.checked)
-                        patchMember({ is_moved: e.target.checked })
-                      }}
-                    />
-                    Moved
-                  </label>
-                  <label className="flex items-center gap-1.5 text-sm text-gray-500 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="rounded"
-                      checked={isStake}
-                      onChange={(e) => {
-                        setIsStake(e.target.checked)
-                        patchMember({ is_stake: e.target.checked })
-                      }}
-                    />
-                    Stake
-                  </label>
-                </div>
-                <div className="flex items-center gap-2">
-                  {onLogSpeaking && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onLogSpeaking(member) }}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
-                    >
-                      <span>+</span> Add Talk
-                    </button>
-                  )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setEditing(true) }}
-                    className="px-3.5 py-1.5 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
-                  >
-                    Edit
-                  </button>
-                  {onDeleted && (
-                    !confirmDelete ? (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setConfirmDelete(true) }}
-                        className="px-3.5 py-1.5 rounded-lg border border-red-200 bg-white text-sm font-semibold text-red-400 hover:text-red-600 hover:bg-red-50 transition"
-                      >
-                        Delete
-                      </button>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Sure?</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setConfirmDelete(false) }}
-                          className="text-xs font-semibold text-gray-500 hover:text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-100 transition"
-                        >
-                          No
-                        </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); deleteMember() }}
-                          className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-2.5 py-1 rounded-lg transition"
-                        >
-                          Yes
-                        </button>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Edit form */
-          <div className="px-5 py-4 space-y-3" onClick={(e) => e.stopPropagation()}>
-            <div>
-              <label className="block text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">
-                Full Name
-              </label>
-              <input
-                type="text"
-                className={inputCls}
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-
-            {talks.length > 0 && (
-              <div>
-                <div className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-2">
-                  Talk History
-                </div>
-                <div className="space-y-2">
-                  {talks.map((t, i) => (
-                    <div key={t.id} className="grid grid-cols-2 gap-2">
-                      <input
-                        type="date"
-                        className={inputCls}
-                        value={t.date}
-                        onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, date: e.target.value } : x))}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Topic…"
-                        className={inputCls}
-                        value={t.topic}
-                        onChange={(e) => setTalks(talks.map((x, j) => j === i ? { ...x, topic: e.target.value } : x))}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={() => { setEditing(false); setConfirmDelete(false) }}
-                className="flex-1 border border-gray-200 text-gray-600 py-1.5 rounded-lg text-sm font-semibold hover:bg-gray-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveEdit}
-                disabled={saving}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded-lg text-sm font-semibold transition disabled:opacity-50"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )

@@ -101,7 +101,7 @@ export default function MeetingDetailPage() {
   if (!meeting) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading…</div>
 
   return (
-    <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
+    <div className="md:pl-16 pb-20 md:pb-0 min-h-screen">
       <Navigation />
 
       <main className="max-w-2xl mx-auto px-4 py-6">

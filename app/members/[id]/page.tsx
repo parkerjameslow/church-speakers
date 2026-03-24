@@ -51,7 +51,7 @@ export default function MemberDetailPage() {
   const status = member.due_status ?? 'never'
 
   return (
-    <div className="md:pl-56 pb-20 md:pb-0 min-h-screen">
+    <div className="md:pl-16 pb-20 md:pb-0 min-h-screen">
       <Navigation />
 
       <main className="max-w-3xl mx-auto px-4 py-6">
