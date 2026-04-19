@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
     .all(search, `%${search}%`) as any[]
 
   // Batch fetch up to 3 recent talks per member
-  let talksByMember: Record<number, { date: string; topic: string | null }[]> = {}
+  let talksByMember: Record<number, { id: number; date: string; topic: string | null }[]> = {}
   if (rows.length > 0) {
     const ids = rows.map((r: any) => r.id)
     const placeholders = ids.map(() => '?').join(',')
