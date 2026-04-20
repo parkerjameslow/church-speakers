@@ -2,11 +2,14 @@
   "name": "church-speakers",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "seed": "node scripts/import-speakers.mjs",
     "dev": "next dev -H 0.0.0.0",
     "build": "next build",
-    "start": "next start"
+    "start": "next start -p ${PORT:-3000}"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
