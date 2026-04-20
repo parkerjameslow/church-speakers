@@ -2,19 +2,24 @@ import { DatabaseSync } from 'node:sqlite'
 import path from 'path'
 import fs from 'fs'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
-const DB_PATH = path.join(DATA_DIR, 'church.db')
+let _db: DatabaseSync | null = null
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true })
-}
+function getDb(): DatabaseSync {
+  if (_db) return _db
 
-const db = new DatabaseSync(DB_PATH)
+  const DATA_DIR = path.join(process.cwd(), 'data')
+  const DB_PATH = path.join(DATA_DIR, 'church.db')
 
-db.exec('PRAGMA journal_mode = WAL')
-db.exec('PRAGMA foreign_keys = ON')
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true })
+  }
 
-db.exec(`
+  _db = new DatabaseSync(DB_PATH)
+
+  _db.exec('PRAGMA journal_mode = WAL')
+  _db.exec('PRAGMA foreign_keys = ON')
+
+  _db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -77,9 +82,18 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_meeting_assignments_member ON meeting_assignments(member_id);
 `)
 
-// Migrations
-try { db.exec(`ALTER TABLE members ADD COLUMN category_override TEXT`) } catch {}
-try { db.exec(`ALTER TABLE members ADD COLUMN is_moved INTEGER NOT NULL DEFAULT 0`) } catch {}
-try { db.exec(`ALTER TABLE members ADD COLUMN is_stake INTEGER NOT NULL DEFAULT 0`) } catch {}
+  // Migrations
+  try { _db.exec(`ALTER TABLE members ADD COLUMN category_override TEXT`) } catch {}
+  try { _db.exec(`ALTER TABLE members ADD COLUMN is_moved INTEGER NOT NULL DEFAULT 0`) } catch {}
+  try { _db.exec(`ALTER TABLE members ADD COLUMN is_stake INTEGER NOT NULL DEFAULT 0`) } catch {}
 
-export default db
+  return _db
+}
+
+export default new Proxy({} as DatabaseSync, {
+  get(_target, prop) {
+    const db = getDb()
+    const value = (db as any)[prop]
+    return typeof value === 'function' ? value.bind(db) : value
+  },
+})

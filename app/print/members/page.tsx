@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import db from '@/lib/db'
 import { getCategory, getDueStatus, getNextDueDate, formatDateShort } from '@/lib/utils'
 import PrintButton from '@/components/PrintButton'

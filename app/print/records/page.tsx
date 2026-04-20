@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import db from '@/lib/db'
 import { getCategory } from '@/lib/utils'
 import PrintButton from '@/components/PrintButton'
