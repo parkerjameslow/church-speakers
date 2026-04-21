@@ -1,10 +1,10 @@
-import { DatabaseSync } from 'node:sqlite'
+import Database from 'better-sqlite3'
 import XLSX from 'xlsx'
 import { createRequire } from 'module'
 
 const require = createRequire(import.meta.url)
 const wb = XLSX.readFile('Sacrament Speaker Schedule .xlsx')
-const db = new DatabaseSync('./data/church.db')
+const db = new Database('./data/church.db')
 
 const TODAY = '2026-03-18'
 
